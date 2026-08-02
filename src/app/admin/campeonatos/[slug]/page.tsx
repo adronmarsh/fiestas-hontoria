@@ -5,9 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { entryLabel } from "@/lib/bracket";
 import { entryTypeLabel, statusLabel } from "@/lib/championships";
 import { BracketView } from "@/components/bracket-view";
+import { ManualBracketForm } from "@/components/manual-bracket-form";
 import {
   DeleteEntryButton,
   GenerateBracketButton,
+  OrganizerEditor,
   ToggleRegistrationButton,
 } from "@/components/admin-championship-actions";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +50,13 @@ export default async function AdminChampionshipDetailPage({ params }: Props) {
         {entryTypeLabel(championship.entryType)} · {statusLabel(championship.status)}
       </p>
 
+      <div className="mt-4 max-w-xl">
+        <OrganizerEditor
+          championshipId={championship.id}
+          organizer={championship.organizer}
+        />
+      </div>
+
       <div className="mt-6 flex flex-wrap gap-3">
         <ToggleRegistrationButton
           championshipId={championship.id}
@@ -61,6 +70,15 @@ export default async function AdminChampionshipDetailPage({ params }: Props) {
         <Badge variant="outline">
           {championship.registrationOpen ? "Inscripciones abiertas" : "Inscripciones cerradas"}
         </Badge>
+      </div>
+
+      <div className="mt-6">
+        <ManualBracketForm
+          championshipId={championship.id}
+          entries={championship.entries}
+          hasMatches={championship.matches.length > 0}
+          hasResults={hasResults}
+        />
       </div>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-2">

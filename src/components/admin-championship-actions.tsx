@@ -6,8 +6,11 @@ import {
   generateBracket,
   regenerateBracket,
   toggleRegistration,
+  updateChampionshipOrganizer,
 } from "@/app/actions/admin";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function ToggleRegistrationButton({
   championshipId,
@@ -49,7 +52,7 @@ export function GenerateBracketButton({
           disabled={pending}
           onClick={() =>
             start(async () => {
-              const r = await generateBracket(championshipId);
+              const r = await generateBracket(championshipId, { mode: "random" });
               setMsg(r.ok ? (r.message ?? "OK") : r.error);
             })
           }
@@ -71,18 +74,18 @@ export function GenerateBracketButton({
             if (
               !confirm(
                 hasResults
-                  ? "Se borrarán todos los resultados y se generará un cuadro nuevo. ¿Continuar?"
-                  : "Se regenerará el cuadro con los inscritos actuales. ¿Continuar?"
+                  ? "Se borrarán todos los resultados y se generará un cuadro aleatorio nuevo. ¿Continuar?"
+                  : "Se regenerará el cuadro aleatorio con los inscritos actuales. ¿Continuar?"
               )
             ) {
               return;
             }
-            const r = await regenerateBracket(championshipId);
+            const r = await regenerateBracket(championshipId, { mode: "random" });
             setMsg(r.ok ? (r.message ?? "OK") : r.error);
           })
         }
       >
-        {pending ? "Regenerando…" : "Regenerar cuadro"}
+        {pending ? "Regenerando…" : "Regenerar aleatorio"}
       </Button>
       {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
     </div>
@@ -105,5 +108,44 @@ export function DeleteEntryButton({ entryId }: { entryId: string }) {
     >
       Borrar
     </Button>
+  );
+}
+
+export function OrganizerEditor({
+  championshipId,
+  organizer,
+}: {
+  championshipId: string;
+  organizer: string | null;
+}) {
+  const [value, setValue] = useState(organizer ?? "");
+  const [pending, start] = useTransition();
+  const [msg, setMsg] = useState<string | null>(null);
+
+  return (
+    <div className="flex flex-wrap items-end gap-2">
+      <div className="flex min-w-[200px] flex-1 flex-col gap-1">
+        <Label htmlFor="organizer">Organizador</Label>
+        <Input
+          id="organizer"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="Nombre del organizador"
+        />
+      </div>
+      <Button
+        size="sm"
+        disabled={pending}
+        onClick={() =>
+          start(async () => {
+            const r = await updateChampionshipOrganizer(championshipId, value);
+            setMsg(r.ok ? (r.message ?? "OK") : r.error);
+          })
+        }
+      >
+        {pending ? "…" : "Guardar"}
+      </Button>
+      {msg && <p className="basis-full text-sm text-muted-foreground">{msg}</p>}
+    </div>
   );
 }

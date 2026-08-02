@@ -33,20 +33,25 @@ export type BracketMatchSeed = {
 /**
  * Builds a single-elimination bracket.
  * Odd count gets a bye (auto-advance as winner with no opponent).
+ * @param randomize — si false, respeta el orden de entryIds (empareja 1-2, 3-4…)
  */
-export function buildBracketSeeds(entryIds: string[]): BracketMatchSeed[] {
+export function buildBracketSeeds(
+  entryIds: string[],
+  options: { randomize?: boolean } = {}
+): BracketMatchSeed[] {
   if (entryIds.length < 2) {
     throw new Error("Se necesitan al menos 2 inscritos para generar el cuadro");
   }
 
-  const shuffled = shuffle(entryIds);
-  const size = nextPowerOfTwo(shuffled.length);
-  const byes = size - shuffled.length;
+  const ordered =
+    options.randomize === false ? [...entryIds] : shuffle(entryIds);
+  const size = nextPowerOfTwo(ordered.length);
+  const byes = size - ordered.length;
   const rounds = Math.log2(size);
   const seeds: BracketMatchSeed[] = [];
 
   // Round 1 slots: fill with entries + byes
-  const r1Slots: (string | null)[] = [...shuffled];
+  const r1Slots: (string | null)[] = [...ordered];
   for (let i = 0; i < byes; i++) r1Slots.push(null);
 
   const r1Count = size / 2;

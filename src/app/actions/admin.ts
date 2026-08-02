@@ -37,8 +37,10 @@ export async function createChampionship(
 ): Promise<ActionResult> {
   await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
+  const organizer = String(formData.get("organizer") ?? "").trim();
   const entryType = String(formData.get("entryType") ?? "");
   if (!name) return { ok: false, error: "Nombre obligatorio" };
+  if (!organizer) return { ok: false, error: "Organizador obligatorio" };
   if (!["individual", "pareja", "trio"].includes(entryType)) {
     return { ok: false, error: "Modalidad inválida" };
   }
@@ -53,6 +55,7 @@ export async function createChampionship(
     data: {
       name,
       slug,
+      organizer,
       entryType: entryType as "individual" | "pareja" | "trio",
     },
   });
@@ -60,6 +63,26 @@ export async function createChampionship(
   revalidatePath("/campeonatos");
   revalidatePath("/admin/campeonatos");
   return { ok: true, message: "Campeonato creado" };
+}
+
+export async function updateChampionshipOrganizer(
+  championshipId: string,
+  organizer: string
+): Promise<ActionResult> {
+  await requireAdmin();
+  const trimmed = organizer.trim();
+  if (!trimmed) return { ok: false, error: "Organizador obligatorio" };
+
+  const c = await prisma.championship.update({
+    where: { id: championshipId },
+    data: { organizer: trimmed },
+  });
+
+  revalidatePath(`/campeonatos/${c.slug}`);
+  revalidatePath(`/admin/campeonatos/${c.slug}`);
+  revalidatePath("/campeonatos");
+  revalidatePath("/admin/campeonatos");
+  return { ok: true, message: "Organizador actualizado" };
 }
 
 export async function toggleRegistration(championshipId: string): Promise<ActionResult> {
@@ -99,32 +122,17 @@ export async function deleteEntry(entryId: string): Promise<ActionResult> {
   return { ok: true };
 }
 
-export async function generateBracket(championshipId: string): Promise<ActionResult> {
-  await requireAdmin();
-  const championship = await prisma.championship.findUnique({
-    where: { id: championshipId },
-    include: { entries: true, matches: true },
-  });
-  if (!championship) return { ok: false, error: "No encontrado" };
-  if (championship.entries.length < 2) {
-    return { ok: false, error: "Se necesitan al menos 2 inscritos" };
-  }
-
-  const hasResults = championship.matches.some((m) => m.winnerId);
-  if (championship.matches.length > 0 && hasResults) {
-    // Allow regenerate only via explicit wipe — handled by regenerateBracket
-    return {
-      ok: false,
-      error: "Ya hay resultados. Usa «Regenerar cuadro» para borrar y crear de nuevo",
-    };
-  }
+async function persistBracket(
+  championshipId: string,
+  entryIds: string[],
+  randomize: boolean
+) {
+  const seeds = buildBracketSeeds(entryIds, { randomize });
+  const idByKey = new Map<string, string>();
 
   await prisma.$transaction(async (tx) => {
     await tx.match.deleteMany({ where: { championshipId } });
-    const seeds = buildBracketSeeds(championship.entries.map((e) => e.id));
-    const idByKey = new Map<string, string>();
 
-    // Create matches without nextMatchId first
     for (const seed of seeds) {
       const created = await tx.match.create({
         data: {
@@ -151,7 +159,6 @@ export async function generateBracket(championshipId: string): Promise<ActionRes
       }
     }
 
-    // Place bye winners into next match slots again (IDs already set on seeds)
     for (const seed of seeds) {
       if (!seed.winnerId || !seed.nextKey) continue;
       const nextId = idByKey.get(seed.nextKey)!;
@@ -171,22 +178,70 @@ export async function generateBracket(championshipId: string): Promise<ActionRes
       data: { status: "bracket", registrationOpen: false },
     });
   });
+}
+
+export async function generateBracket(
+  championshipId: string,
+  options: { mode?: "random" | "manual"; entryOrder?: string[] } = {}
+): Promise<ActionResult> {
+  await requireAdmin();
+  const mode = options.mode ?? "random";
+
+  const championship = await prisma.championship.findUnique({
+    where: { id: championshipId },
+    include: { entries: true, matches: true },
+  });
+  if (!championship) return { ok: false, error: "No encontrado" };
+  if (championship.entries.length < 2) {
+    return { ok: false, error: "Se necesitan al menos 2 inscritos" };
+  }
+
+  const hasResults = championship.matches.some((m) => m.winnerId);
+  if (championship.matches.length > 0 && hasResults) {
+    return {
+      ok: false,
+      error: "Ya hay resultados. Usa «Regenerar» para borrar y crear de nuevo",
+    };
+  }
+
+  let entryIds: string[];
+  if (mode === "manual") {
+    const order = options.entryOrder ?? [];
+    const validIds = new Set(championship.entries.map((e) => e.id));
+    if (order.length !== championship.entries.length) {
+      return { ok: false, error: "El orden manual debe incluir a todos los inscritos" };
+    }
+    if (!order.every((id) => validIds.has(id))) {
+      return { ok: false, error: "Hay inscritos inválidos en el orden manual" };
+    }
+    entryIds = order;
+  } else {
+    entryIds = championship.entries.map((e) => e.id);
+  }
+
+  await persistBracket(championshipId, entryIds, mode === "random");
 
   revalidatePath(`/campeonatos/${championship.slug}`);
   revalidatePath(`/admin/campeonatos/${championship.slug}`);
   revalidatePath("/admin/campeonatos");
   revalidatePath("/campeonatos");
-  return { ok: true, message: "Cuadro generado" };
+  return {
+    ok: true,
+    message: mode === "manual" ? "Cuadro manual generado" : "Cuadro aleatorio generado",
+  };
 }
 
-export async function regenerateBracket(championshipId: string): Promise<ActionResult> {
+export async function regenerateBracket(
+  championshipId: string,
+  options: { mode?: "random" | "manual"; entryOrder?: string[] } = {}
+): Promise<ActionResult> {
   await requireAdmin();
   await prisma.match.deleteMany({ where: { championshipId } });
   await prisma.championship.update({
     where: { id: championshipId },
     data: { status: "open" },
   });
-  return generateBracket(championshipId);
+  return generateBracket(championshipId, options);
 }
 
 export async function setMatchWinner(
@@ -214,7 +269,6 @@ export async function setMatchWinner(
     if (match.nextMatchId) {
       const next = await tx.match.findUnique({ where: { id: match.nextMatchId } });
       if (next) {
-        // Determine slot from position in current round
         const slotIsA = match.position % 2 === 0;
         await tx.match.update({
           where: { id: match.nextMatchId },
@@ -222,7 +276,6 @@ export async function setMatchWinner(
         });
       }
     } else {
-      // Final match — championship finished
       await tx.championship.update({
         where: { id: match.championshipId },
         data: { status: "finished" },

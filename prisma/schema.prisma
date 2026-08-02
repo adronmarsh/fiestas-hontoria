@@ -23,6 +23,7 @@ model Championship {
   id               String             @id @default(cuid())
   name             String
   slug             String             @unique
+  organizer        String?
   entryType        EntryType
   registrationOpen Boolean            @default(true)
   status           ChampionshipStatus @default(open)

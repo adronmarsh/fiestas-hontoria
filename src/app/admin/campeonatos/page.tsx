@@ -39,8 +39,9 @@ export default async function AdminChampionshipsPage() {
               <div>
                 <p className="font-display text-xl tracking-wide">{c.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {entryTypeLabel(c.entryType)} · {c._count.entries} inscritos ·{" "}
-                  {c._count.matches} partidos
+                  {entryTypeLabel(c.entryType)}
+                  {c.organizer ? ` · Org: ${c.organizer}` : ""} ·{" "}
+                  {c._count.entries} inscritos · {c._count.matches} partidos
                 </p>
               </div>
               <Badge variant="outline">{statusLabel(c.status)}</Badge>

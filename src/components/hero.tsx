@@ -18,8 +18,6 @@ export function Hero() {
         }}
         aria-hidden
       />
-      <div className="bunting absolute top-0 left-0 right-0 z-10 opacity-95" aria-hidden />
-
       <div className="relative z-10 mx-auto flex min-h-[calc(100svh-5rem)] max-w-6xl flex-col items-center justify-center px-4 py-16 text-center">
         <Image
           src="/escudo.svg"

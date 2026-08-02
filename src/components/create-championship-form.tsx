@@ -13,32 +13,43 @@ export function CreateChampionshipForm() {
   );
 
   return (
-    <form action={action} className="flex flex-col gap-3 border-2 border-fiesta-ink bg-white p-4 sm:flex-row sm:items-end">
-      <div className="flex flex-1 flex-col gap-2">
-        <Label htmlFor="name">Nuevo campeonato</Label>
-        <Input id="name" name="name" required placeholder="Ej. Bolos" />
+    <form action={action} className="flex flex-col gap-3 border-2 border-fiesta-ink bg-white p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <div className="flex flex-1 flex-col gap-2">
+          <Label htmlFor="name">Nuevo campeonato</Label>
+          <Input id="name" name="name" required placeholder="Ej. Bolos" />
+        </div>
+        <div className="flex flex-1 flex-col gap-2">
+          <Label htmlFor="organizer">Organizador</Label>
+          <Input
+            id="organizer"
+            name="organizer"
+            required
+            placeholder="Ej. Pepe García"
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="entryType">Modalidad</Label>
+          <select
+            id="entryType"
+            name="entryType"
+            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+            defaultValue="individual"
+          >
+            <option value="individual">Individual</option>
+            <option value="pareja">Parejas</option>
+            <option value="trio">Tríos</option>
+          </select>
+        </div>
+        <Button type="submit" disabled={pending}>
+          {pending ? "Creando…" : "Crear"}
+        </Button>
       </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="entryType">Modalidad</Label>
-        <select
-          id="entryType"
-          name="entryType"
-          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
-          defaultValue="individual"
-        >
-          <option value="individual">Individual</option>
-          <option value="pareja">Parejas</option>
-          <option value="trio">Tríos</option>
-        </select>
-      </div>
-      <Button type="submit" disabled={pending}>
-        {pending ? "Creando…" : "Crear"}
-      </Button>
       {state?.ok === false && (
-        <p className="basis-full text-sm text-destructive">{state.error}</p>
+        <p className="text-sm text-destructive">{state.error}</p>
       )}
       {state?.ok === true && (
-        <p className="basis-full text-sm text-fiesta-cyan">{state.message}</p>
+        <p className="text-sm text-fiesta-cyan">{state.message}</p>
       )}
     </form>
   );

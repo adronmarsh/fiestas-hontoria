@@ -18,6 +18,8 @@ export type CalendarItem = {
   note?: string;
   kind: "programa" | "campeonato";
   href?: string;
+  /** Nombres de jugadores para filtrar (solo enfrentamientos) */
+  playerNames?: string[];
 };
 
 type MatchForCalendar = {
@@ -31,21 +33,16 @@ type MatchForCalendar = {
 function parseProgramaTime(dayNumber: string, time?: string): { sortKey: number; timeLabel: string | null } {
   const day = Number(dayNumber);
   if (!time) {
-    // Untimed events: morning default for sorting
     return {
       sortKey: Date.UTC(2026, 7, day, 12, 0),
       timeLabel: null,
     };
   }
 
-  // Ranges like "00:00–04:30" or "13:00–15:00" → use start
   const start = time.split("–")[0]?.trim() ?? time;
   const [hStr, mStr] = start.split(":");
   let h = Number(hStr);
   const m = Number(mStr ?? "0");
-
-  // Late-night events after midnight on the listed day (00:30, 00:00)
-  // keep on that calendar day as listed in the program
   if (Number.isNaN(h)) h = 12;
 
   return {
@@ -80,6 +77,14 @@ export function buildMatchCalendarItems(matches: MatchForCalendar[]): CalendarIt
     const d = new Date(match.scheduledAt);
     const a = match.entryA ? entryLabel(match.entryA) : "Por determinar";
     const b = match.entryB ? entryLabel(match.entryB) : "Por determinar";
+    const playerNames = [
+      match.entryA?.player1,
+      match.entryA?.player2,
+      match.entryA?.player3,
+      match.entryB?.player1,
+      match.entryB?.player2,
+      match.entryB?.player3,
+    ].filter((n): n is string => Boolean(n));
 
     return {
       id: `match-${match.id}`,
@@ -92,6 +97,7 @@ export function buildMatchCalendarItems(matches: MatchForCalendar[]): CalendarIt
       note: "Campeonato · eliminatoria",
       kind: "campeonato" as const,
       href: `/campeonatos/${match.championship.slug}`,
+      playerNames,
     };
   });
 }

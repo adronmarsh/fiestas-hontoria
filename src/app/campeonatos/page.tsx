@@ -51,6 +51,7 @@ export default async function CampeonatosPage() {
               <h2 className="font-display text-2xl tracking-wide">{c.name}</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 {entryTypeLabel(c.entryType)}
+                {c.organizer ? ` · Org: ${c.organizer}` : ""}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Badge variant="outline">{statusLabel(c.status)}</Badge>

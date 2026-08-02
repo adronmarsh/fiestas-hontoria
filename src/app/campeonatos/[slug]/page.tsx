@@ -44,6 +44,12 @@ export default async function ChampionshipPage({ params }: Props) {
           <p className="mt-2 text-muted-foreground">
             {entryTypeLabel(championship.entryType)} · eliminatorias
           </p>
+          {championship.organizer && (
+            <p className="mt-1 text-sm">
+              <span className="font-semibold text-fiesta-magenta">Organiza:</span>{" "}
+              {championship.organizer}
+            </p>
+          )}
           <div className="mt-3 flex flex-wrap gap-2">
             <Badge variant="outline">{statusLabel(championship.status)}</Badge>
             <Badge className="bg-fiesta-yellow text-fiesta-ink">
