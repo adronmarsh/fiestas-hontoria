@@ -32,7 +32,7 @@ export type BracketMatchSeed = {
 
 /**
  * Builds a single-elimination bracket.
- * Odd count gets a bye (auto-advance as winner with no opponent).
+ * Odd counts / non-power-of-two get byes (player vs empty → auto-advance).
  * @param randomize — si false, respeta el orden de entryIds (empareja 1-2, 3-4…)
  */
 export function buildBracketSeeds(
@@ -50,24 +50,36 @@ export function buildBracketSeeds(
   const rounds = Math.log2(size);
   const seeds: BracketMatchSeed[] = [];
 
-  // Round 1 slots: fill with entries + byes
-  const r1Slots: (string | null)[] = [...ordered];
-  for (let i = 0; i < byes; i++) r1Slots.push(null);
-
+  // Round 1: first `byes` players get a bye; the rest play in pairs.
+  // This avoids null-vs-null "ghost" matches that break the bracket.
   const r1Count = size / 2;
+  const r1Pairs: { a: string | null; b: string | null; winnerId: string | null }[] = [];
+  let idx = 0;
+
+  for (let b = 0; b < byes; b++) {
+    const player = ordered[idx++]!;
+    r1Pairs.push({ a: player, b: null, winnerId: player });
+  }
+  while (idx < ordered.length) {
+    const a = ordered[idx++]!;
+    const b = ordered[idx++]!;
+    r1Pairs.push({ a, b, winnerId: null });
+  }
+
+  if (r1Pairs.length !== r1Count) {
+    throw new Error("Error interno al construir la primera ronda del cuadro");
+  }
+
   for (let pos = 0; pos < r1Count; pos++) {
-    const a = r1Slots[pos * 2] ?? null;
-    const b = r1Slots[pos * 2 + 1] ?? null;
-    const isBye = (a === null) !== (b === null);
-    const winnerId = isBye ? (a ?? b) : null;
+    const pair = r1Pairs[pos]!;
     const nextRound = rounds > 1 ? 2 : null;
     const nextPos = Math.floor(pos / 2);
     seeds.push({
       round: 1,
       position: pos,
-      entryAId: a,
-      entryBId: b,
-      winnerId,
+      entryAId: pair.a,
+      entryBId: pair.b,
+      winnerId: pair.winnerId,
       key: `1-${pos}`,
       nextKey: nextRound ? `${nextRound}-${nextPos}` : null,
     });

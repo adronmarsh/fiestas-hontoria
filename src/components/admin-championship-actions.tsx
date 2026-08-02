@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
+  clearBracket,
   deleteEntry,
   generateBracket,
   regenerateBracket,
@@ -35,11 +36,10 @@ export function ToggleRegistrationButton({
 export function GenerateBracketButton({
   championshipId,
   hasMatches,
-  hasResults,
 }: {
   championshipId: string;
   hasMatches: boolean;
-  hasResults: boolean;
+  hasResults?: boolean;
 }) {
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
@@ -71,15 +71,6 @@ export function GenerateBracketButton({
         disabled={pending}
         onClick={() =>
           start(async () => {
-            if (
-              !confirm(
-                hasResults
-                  ? "Se borrarán todos los resultados y se generará un cuadro aleatorio nuevo. ¿Continuar?"
-                  : "Se regenerará el cuadro aleatorio con los inscritos actuales. ¿Continuar?"
-              )
-            ) {
-              return;
-            }
             const r = await regenerateBracket(championshipId, { mode: "random" });
             setMsg(r.ok ? (r.message ?? "OK") : r.error);
           })
@@ -92,22 +83,88 @@ export function GenerateBracketButton({
   );
 }
 
-export function DeleteEntryButton({ entryId }: { entryId: string }) {
+export function ClearBracketButton({
+  championshipId,
+  hasMatches,
+}: {
+  championshipId: string;
+  hasMatches: boolean;
+}) {
   const [pending, start] = useTransition();
+  const [msg, setMsg] = useState<string | null>(null);
+
+  if (!hasMatches) return null;
+
   return (
-    <Button
-      size="sm"
-      variant="ghost"
-      disabled={pending}
-      onClick={() =>
-        start(async () => {
-          if (!confirm("¿Eliminar este inscrito?")) return;
-          await deleteEntry(entryId);
-        })
-      }
+    <div className="flex flex-col gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={pending}
+        className="border-destructive/40 text-destructive hover:bg-destructive/10"
+        onClick={() =>
+          start(async () => {
+            const r = await clearBracket(championshipId);
+            setMsg(r.ok ? (r.message ?? "OK") : r.error);
+          })
+        }
+      >
+        {pending ? "Borrando…" : "Borrar cuadro"}
+      </Button>
+      {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
+    </div>
+  );
+}
+
+export function AdminEntryRow({
+  entryId,
+  label,
+}: {
+  entryId: string;
+  label: string;
+  hasBracket?: boolean;
+}) {
+  const [pending, start] = useTransition();
+  const [removing, setRemoving] = useState(false);
+  const [gone, setGone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (gone) return null;
+
+  return (
+    <li
+      className={`flex items-center justify-between gap-2 border bg-white px-3 py-2 transition-colors ${
+        removing ? "animate-entry-delete" : ""
+      }`}
     >
-      Borrar
-    </Button>
+      <div className="min-w-0 flex-1">
+        <span className={removing ? "italic" : undefined}>{label}</span>
+        {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
+      </div>
+      <Button
+        size="sm"
+        variant="ghost"
+        disabled={pending || removing}
+        className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+        onClick={() => {
+          setError(null);
+          setRemoving(true);
+          window.setTimeout(() => {
+            start(async () => {
+              const r = await deleteEntry(entryId);
+              if (!r.ok) {
+                setRemoving(false);
+                setError(r.error);
+                return;
+              }
+              setGone(true);
+            });
+          }, 420);
+        }}
+      >
+        {pending || removing ? "…" : "Borrar"}
+      </Button>
+    </li>
   );
 }
 
@@ -121,6 +178,10 @@ export function OrganizerEditor({
   const [value, setValue] = useState(organizer ?? "");
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    setValue(organizer ?? "");
+  }, [organizer]);
 
   return (
     <div className="flex flex-wrap items-end gap-2">
@@ -145,6 +206,23 @@ export function OrganizerEditor({
       >
         {pending ? "…" : "Guardar"}
       </Button>
+      {value && (
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={pending}
+          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+          onClick={() =>
+            start(async () => {
+              setValue("");
+              const r = await updateChampionshipOrganizer(championshipId, "");
+              setMsg(r.ok ? (r.message ?? "OK") : r.error);
+            })
+          }
+        >
+          Borrar
+        </Button>
+      )}
       {msg && <p className="basis-full text-sm text-muted-foreground">{msg}</p>}
     </div>
   );

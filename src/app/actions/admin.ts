@@ -40,7 +40,6 @@ export async function createChampionship(
   const organizer = String(formData.get("organizer") ?? "").trim();
   const entryType = String(formData.get("entryType") ?? "");
   if (!name) return { ok: false, error: "Nombre obligatorio" };
-  if (!organizer) return { ok: false, error: "Organizador obligatorio" };
   if (!["individual", "pareja", "trio"].includes(entryType)) {
     return { ok: false, error: "Modalidad inválida" };
   }
@@ -55,7 +54,7 @@ export async function createChampionship(
     data: {
       name,
       slug,
-      organizer,
+      organizer: organizer || null,
       entryType: entryType as "individual" | "pareja" | "trio",
     },
   });
@@ -71,18 +70,21 @@ export async function updateChampionshipOrganizer(
 ): Promise<ActionResult> {
   await requireAdmin();
   const trimmed = organizer.trim();
-  if (!trimmed) return { ok: false, error: "Organizador obligatorio" };
+  const value = trimmed.length > 0 ? trimmed : null;
 
   const c = await prisma.championship.update({
     where: { id: championshipId },
-    data: { organizer: trimmed },
+    data: { organizer: value },
   });
 
   revalidatePath(`/campeonatos/${c.slug}`);
   revalidatePath(`/admin/campeonatos/${c.slug}`);
   revalidatePath("/campeonatos");
   revalidatePath("/admin/campeonatos");
-  return { ok: true, message: "Organizador actualizado" };
+  return {
+    ok: true,
+    message: value ? "Organizador actualizado" : "Organizador borrado",
+  };
 }
 
 export async function toggleRegistration(championshipId: string): Promise<ActionResult> {
@@ -112,14 +114,53 @@ export async function deleteEntry(entryId: string): Promise<ActionResult> {
   const hasMatches = await prisma.match.count({
     where: { championshipId: entry.championshipId },
   });
-  if (hasMatches > 0) {
-    return { ok: false, error: "No se puede borrar: ya hay cuadro generado" };
-  }
 
+  if (hasMatches > 0) {
+    await clearMatches(entry.championshipId);
+    await prisma.championship.update({
+      where: { id: entry.championshipId },
+      data: { status: "open" },
+    });
+  }
   await prisma.entry.delete({ where: { id: entryId } });
+
   revalidatePath(`/campeonatos/${entry.championship.slug}`);
   revalidatePath(`/admin/campeonatos/${entry.championship.slug}`);
-  return { ok: true };
+  revalidatePath("/campeonatos");
+  revalidatePath("/admin/campeonatos");
+  return {
+    ok: true,
+    message: hasMatches > 0 ? "Inscrito borrado y cuadro vaciado" : "Inscrito borrado",
+  };
+}
+
+export async function clearBracket(championshipId: string): Promise<ActionResult> {
+  await requireAdmin();
+  const championship = await prisma.championship.findUnique({
+    where: { id: championshipId },
+  });
+  if (!championship) return { ok: false, error: "No encontrado" };
+
+  await clearMatches(championshipId);
+  await prisma.championship.update({
+    where: { id: championshipId },
+    data: { status: "open" },
+  });
+
+  revalidatePath(`/campeonatos/${championship.slug}`);
+  revalidatePath(`/admin/campeonatos/${championship.slug}`);
+  revalidatePath("/campeonatos");
+  revalidatePath("/admin/campeonatos");
+  return { ok: true, message: "Cuadro borrado" };
+}
+
+async function clearMatches(championshipId: string) {
+  // Neon pooled connections need nextMatchId cleared before deleteMany
+  await prisma.match.updateMany({
+    where: { championshipId },
+    data: { nextMatchId: null },
+  });
+  await prisma.match.deleteMany({ where: { championshipId } });
 }
 
 async function persistBracket(
@@ -128,55 +169,46 @@ async function persistBracket(
   randomize: boolean
 ) {
   const seeds = buildBracketSeeds(entryIds, { randomize });
+
+  await clearMatches(championshipId);
+
+  const created = await prisma.match.createManyAndReturn({
+    data: seeds.map((seed) => ({
+      championshipId,
+      round: seed.round,
+      position: seed.position,
+      entryAId: seed.entryAId,
+      entryBId: seed.entryBId,
+      winnerId: seed.winnerId,
+    })),
+  });
+
   const idByKey = new Map<string, string>();
+  for (const seed of seeds) {
+    const row = created.find(
+      (m) => m.round === seed.round && m.position === seed.position
+    );
+    if (row) idByKey.set(seed.key, row.id);
+  }
 
-  await prisma.$transaction(async (tx) => {
-    await tx.match.deleteMany({ where: { championshipId } });
-
-    for (const seed of seeds) {
-      const created = await tx.match.create({
-        data: {
-          championshipId,
-          round: seed.round,
-          position: seed.position,
-          entryAId: seed.entryAId,
-          entryBId: seed.entryBId,
-          winnerId: seed.winnerId,
-        },
-      });
-      idByKey.set(seed.key, created.id);
-    }
-
-    for (const seed of seeds) {
-      if (!seed.nextKey) continue;
-      const id = idByKey.get(seed.key);
-      const nextId = idByKey.get(seed.nextKey);
-      if (id && nextId) {
-        await tx.match.update({
+  await Promise.all(
+    seeds
+      .filter((seed) => seed.nextKey)
+      .map((seed) => {
+        const id = idByKey.get(seed.key);
+        const nextId = idByKey.get(seed.nextKey!);
+        if (!id || !nextId) return Promise.resolve();
+        return prisma.match.update({
           where: { id },
           data: { nextMatchId: nextId },
         });
-      }
-    }
+      })
+  );
 
-    for (const seed of seeds) {
-      if (!seed.winnerId || !seed.nextKey) continue;
-      const nextId = idByKey.get(seed.nextKey)!;
-      const next = await tx.match.findUnique({ where: { id: nextId } });
-      if (!next) continue;
-      const slotIsA = seed.position % 2 === 0;
-      await tx.match.update({
-        where: { id: nextId },
-        data: slotIsA
-          ? { entryAId: next.entryAId ?? seed.winnerId }
-          : { entryBId: next.entryBId ?? seed.winnerId },
-      });
-    }
-
-    await tx.championship.update({
-      where: { id: championshipId },
-      data: { status: "bracket", registrationOpen: false },
-    });
+  // Bye winners already live in seed.entryA/B of later rounds via createManyAndReturn
+  await prisma.championship.update({
+    where: { id: championshipId },
+    data: { status: "bracket", registrationOpen: false },
   });
 }
 
@@ -196,8 +228,11 @@ export async function generateBracket(
     return { ok: false, error: "Se necesitan al menos 2 inscritos" };
   }
 
-  const hasResults = championship.matches.some((m) => m.winnerId);
-  if (championship.matches.length > 0 && hasResults) {
+  // winnerId en byes no cuenta como resultado jugado
+  const hasPlayedResults = championship.matches.some(
+    (m) => m.winnerId && m.entryAId && m.entryBId
+  );
+  if (championship.matches.length > 0 && hasPlayedResults) {
     return {
       ok: false,
       error: "Ya hay resultados. Usa «Regenerar» para borrar y crear de nuevo",
@@ -219,7 +254,12 @@ export async function generateBracket(
     entryIds = championship.entries.map((e) => e.id);
   }
 
-  await persistBracket(championshipId, entryIds, mode === "random");
+  try {
+    await persistBracket(championshipId, entryIds, mode === "random");
+  } catch (e) {
+    console.error("persistBracket failed", e);
+    return { ok: false, error: "No se pudo generar el cuadro. Inténtalo de nuevo." };
+  }
 
   revalidatePath(`/campeonatos/${championship.slug}`);
   revalidatePath(`/admin/campeonatos/${championship.slug}`);
@@ -236,7 +276,7 @@ export async function regenerateBracket(
   options: { mode?: "random" | "manual"; entryOrder?: string[] } = {}
 ): Promise<ActionResult> {
   await requireAdmin();
-  await prisma.match.deleteMany({ where: { championshipId } });
+  await clearMatches(championshipId);
   await prisma.championship.update({
     where: { id: championshipId },
     data: { status: "open" },

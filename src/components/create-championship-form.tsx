@@ -24,8 +24,7 @@ export function CreateChampionshipForm() {
           <Input
             id="organizer"
             name="organizer"
-            required
-            placeholder="Ej. Pepe García"
+            placeholder="Ej. Pepe García (opcional)"
           />
         </div>
         <div className="flex flex-col gap-2">

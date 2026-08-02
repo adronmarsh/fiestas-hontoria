@@ -243,4 +243,36 @@
   .animate-glow {
     animation: pulse-glow 2.8s ease-in-out infinite;
   }
+
+  @keyframes entry-delete {
+    0% {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      max-height: 4rem;
+      margin-bottom: 0.5rem;
+    }
+    35% {
+      opacity: 0.85;
+      transform: translateX(-4px) scale(0.99);
+      background-color: color-mix(in srgb, var(--destructive) 12%, white);
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(28px) scale(0.96);
+      max-height: 0;
+      margin-bottom: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-width: 0;
+    }
+  }
+
+  .animate-entry-delete {
+    overflow: hidden;
+    pointer-events: none;
+    text-decoration: line-through;
+    text-decoration-color: var(--destructive);
+    color: color-mix(in srgb, var(--destructive) 70%, var(--muted-foreground));
+    animation: entry-delete 0.45s ease-in forwards;
+  }
 }

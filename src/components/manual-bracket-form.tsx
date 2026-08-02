@@ -16,12 +16,11 @@ export function ManualBracketForm({
   championshipId,
   entries,
   hasMatches,
-  hasResults,
 }: {
   championshipId: string;
   entries: EntryRow[];
   hasMatches: boolean;
-  hasResults: boolean;
+  hasResults?: boolean;
 }) {
   const [order, setOrder] = useState(entries.map((e) => e.id));
   const [pending, start] = useTransition();
@@ -46,17 +45,6 @@ export function ManualBracketForm({
 
   function submit() {
     start(async () => {
-      if (hasMatches) {
-        if (
-          !confirm(
-            hasResults
-              ? "Se borrarán resultados y se creará el cuadro con este orden. ¿Continuar?"
-              : "Se regenerará el cuadro con este orden. ¿Continuar?"
-          )
-        ) {
-          return;
-        }
-      }
       const action = hasMatches ? regenerateBracket : generateBracket;
       const r = await action(championshipId, {
         mode: "manual",
@@ -70,7 +58,7 @@ export function ManualBracketForm({
   if (entries.length < 2) {
     return (
       <p className="text-sm text-muted-foreground">
-        Haz falta al menos 2 inscritos para el cuadro manual.
+        Hace falta al menos 2 inscritos para el cuadro manual.
       </p>
     );
   }

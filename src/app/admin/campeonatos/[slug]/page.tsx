@@ -7,7 +7,8 @@ import { entryTypeLabel, statusLabel } from "@/lib/championships";
 import { BracketView } from "@/components/bracket-view";
 import { ManualBracketForm } from "@/components/manual-bracket-form";
 import {
-  DeleteEntryButton,
+  AdminEntryRow,
+  ClearBracketButton,
   GenerateBracketButton,
   OrganizerEditor,
   ToggleRegistrationButton,
@@ -57,7 +58,7 @@ export default async function AdminChampionshipDetailPage({ params }: Props) {
         />
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-3">
+      <div className="mt-6 flex flex-wrap items-start gap-3">
         <ToggleRegistrationButton
           championshipId={championship.id}
           open={championship.registrationOpen}
@@ -66,6 +67,10 @@ export default async function AdminChampionshipDetailPage({ params }: Props) {
           championshipId={championship.id}
           hasMatches={championship.matches.length > 0}
           hasResults={hasResults}
+        />
+        <ClearBracketButton
+          championshipId={championship.id}
+          hasMatches={championship.matches.length > 0}
         />
         <Badge variant="outline">
           {championship.registrationOpen ? "Inscripciones abiertas" : "Inscripciones cerradas"}
@@ -86,13 +91,11 @@ export default async function AdminChampionshipDetailPage({ params }: Props) {
           <h2 className="font-display text-xl tracking-wide">Inscritos</h2>
           <ul className="mt-3 flex flex-col gap-2">
             {championship.entries.map((e) => (
-              <li
+              <AdminEntryRow
                 key={e.id}
-                className="flex items-center justify-between gap-2 border bg-white px-3 py-2"
-              >
-                <span>{entryLabel(e)}</span>
-                <DeleteEntryButton entryId={e.id} />
-              </li>
+                entryId={e.id}
+                label={entryLabel(e)}
+              />
             ))}
           </ul>
           {championship.entries.length === 0 && (
