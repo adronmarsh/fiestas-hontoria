@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { DayBanner } from "@/components/day-banner";
 import { Hero } from "@/components/hero";
 import { buttonVariants } from "@/components/ui/button";
-import { PROGRAMA, NOTAS_INTERES } from "@/lib/programa";
+import { PROGRAMA, NOTAS_INTERES, PROGRAMA_PDF_HREF } from "@/lib/programa";
 import { cn } from "@/lib/utils";
 
 export default function HomePage() {
@@ -21,11 +22,7 @@ export default function HomePage() {
         <ul className="mt-8 grid gap-6 md:grid-cols-3">
           {highlightDays.map((day) => (
             <li key={day.id}>
-              <p className="day-banner text-xl sm:text-2xl">
-                {day.label.replace(/(\d+)/, "")}
-                <span className="day-num">{day.dayNumber}</span>
-                {" AGOSTO"}
-              </p>
+              <DayBanner weekday={day.weekday} dayNumber={day.dayNumber} />
               <ul className="mt-3 flex flex-col gap-2">
                 {day.events.map((ev) => (
                   <li key={ev.title} className="text-base">
@@ -41,12 +38,24 @@ export default function HomePage() {
             </li>
           ))}
         </ul>
-        <div className="mt-8">
+        <div className="mt-8 flex flex-wrap gap-3">
           <Link
             href="/programa"
             className={cn(buttonVariants(), "font-display tracking-wide")}
           >
             Programa completo
+          </Link>
+          <Link
+            href={PROGRAMA_PDF_HREF}
+            download
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "border-fiesta-ink font-display tracking-wide"
+            )}
+          >
+            Descargar PDF
           </Link>
         </div>
       </section>

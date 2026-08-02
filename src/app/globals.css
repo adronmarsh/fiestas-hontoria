@@ -119,12 +119,20 @@
 
   .splatter-bg {
     background-color: var(--background);
+    position: relative;
+  }
+
+  .splatter-bg::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: var(--background);
     background-image:
-      radial-gradient(ellipse 40% 30% at 0% 0%, color-mix(in srgb, var(--fiesta-yellow) 55%, transparent), transparent),
-      radial-gradient(ellipse 35% 28% at 100% 0%, color-mix(in srgb, var(--fiesta-cyan) 50%, transparent), transparent),
-      radial-gradient(ellipse 50% 35% at 50% 100%, color-mix(in srgb, var(--fiesta-magenta) 45%, transparent), transparent),
-      radial-gradient(circle at 15% 70%, color-mix(in srgb, var(--fiesta-cyan) 20%, transparent) 0 2px, transparent 3px),
-      radial-gradient(circle at 80% 40%, color-mix(in srgb, var(--fiesta-magenta) 25%, transparent) 0 3px, transparent 4px);
+      radial-gradient(ellipse 55% 40% at 0% 0%, color-mix(in srgb, var(--fiesta-yellow) 50%, transparent), transparent 70%),
+      radial-gradient(ellipse 50% 38% at 100% 0%, color-mix(in srgb, var(--fiesta-cyan) 45%, transparent), transparent 70%),
+      radial-gradient(ellipse 70% 45% at 50% 100%, color-mix(in srgb, var(--fiesta-magenta) 40%, transparent), transparent 75%);
   }
 
   .day-banner {

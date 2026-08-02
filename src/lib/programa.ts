@@ -6,21 +6,23 @@ export type ProgramaEvento = {
 
 export type ProgramaDia = {
   id: string;
-  label: string;
+  weekday: string;
   dayNumber: string;
   events: ProgramaEvento[];
 };
 
+export const PROGRAMA_PDF_HREF = "/programa-fiestas-2026.pdf";
+
 export const PROGRAMA: ProgramaDia[] = [
   {
     id: "1-agosto",
-    label: "Sábado 1 agosto",
+    weekday: "Sábado",
     dayNumber: "1",
     events: [{ title: "Comienzo campeonato de bolos" }],
   },
   {
     id: "3-agosto",
-    label: "Lunes 3 agosto",
+    weekday: "Lunes",
     dayNumber: "3",
     events: [
       { time: "18:30", title: "Campeonato de parchís por parejas" },
@@ -29,7 +31,7 @@ export const PROGRAMA: ProgramaDia[] = [
   },
   {
     id: "4-agosto",
-    label: "Martes 4 agosto",
+    weekday: "Martes",
     dayNumber: "4",
     events: [
       { time: "19:30", title: "Exhibición trial bike Raúl Gutiérrez" },
@@ -38,7 +40,7 @@ export const PROGRAMA: ProgramaDia[] = [
   },
   {
     id: "5-agosto",
-    label: "Miércoles 5 agosto",
+    weekday: "Miércoles",
     dayNumber: "5",
     events: [
       { time: "19:30", title: "Espectáculo infantil «Sopa Risa»" },
@@ -48,7 +50,7 @@ export const PROGRAMA: ProgramaDia[] = [
   },
   {
     id: "6-agosto",
-    label: "Jueves 6 agosto",
+    weekday: "Jueves",
     dayNumber: "6",
     events: [
       {
@@ -65,7 +67,7 @@ export const PROGRAMA: ProgramaDia[] = [
   },
   {
     id: "7-agosto",
-    label: "Viernes 7 agosto",
+    weekday: "Viernes",
     dayNumber: "7",
     events: [
       { time: "18:30", title: "Quedada para preparar mesas y sillas" },
@@ -82,7 +84,7 @@ export const PROGRAMA: ProgramaDia[] = [
   },
   {
     id: "8-agosto",
-    label: "Sábado 8 agosto",
+    weekday: "Sábado",
     dayNumber: "8",
     events: [
       { time: "17:00", title: "Encuentro escuela de bolos", note: "Aperitivo" },
@@ -101,7 +103,7 @@ export const PROGRAMA: ProgramaDia[] = [
   },
   {
     id: "9-agosto",
-    label: "Domingo 9 agosto",
+    weekday: "Domingo",
     dayNumber: "9",
     events: [
       { time: "19:00", title: "Dúo musical" },

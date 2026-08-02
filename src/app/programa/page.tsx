@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
-import { PROGRAMA, NOTAS_INTERES } from "@/lib/programa";
+import Link from "next/link";
+import { DayBanner } from "@/components/day-banner";
+import { buttonVariants } from "@/components/ui/button";
+import { PROGRAMA, NOTAS_INTERES, PROGRAMA_PDF_HREF } from "@/lib/programa";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Programa",
@@ -17,15 +21,29 @@ export default function ProgramaPage() {
         Todas las actividades del programa oficial. Los horarios pueden variar por
         organización.
       </p>
+      <div className="mt-6">
+        <Link
+          href={PROGRAMA_PDF_HREF}
+          download
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            buttonVariants({ size: "lg" }),
+            "font-display tracking-wide"
+          )}
+        >
+          Descargar PDF del programa
+        </Link>
+      </div>
 
       <div className="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
         {PROGRAMA.map((day) => (
           <article key={day.id} id={day.id}>
-            <h2 className="day-banner text-xl sm:text-2xl">
-              {day.label.replace(/\d+/, "")}
-              <span className="day-num">{day.dayNumber}</span>
-              {" AGOSTO"}
-            </h2>
+            <DayBanner
+              as="h2"
+              weekday={day.weekday}
+              dayNumber={day.dayNumber}
+            />
             <ul className="mt-4 flex flex-col gap-3">
               {day.events.map((ev) => (
                 <li key={`${day.id}-${ev.title}`} className="border-l-4 border-fiesta-yellow pl-3">
