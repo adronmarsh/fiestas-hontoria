@@ -1,0 +1,22 @@
+---
+description: Stack y restricciones de la web de fiestas
+globs:
+  - app/**/*
+  - components/**/*
+  - lib/**/*
+  - prisma/**/*
+---
+
+# Stack
+
+- Next.js App Router, TypeScript, Tailwind, shadcn/ui
+- Neon Postgres + Prisma
+- Deploy en Vercel
+- Contenido desde `docs/wiki/`
+- Idioma UI y respuestas: español
+
+# Campeonatos
+
+- Inscripción pública sin login (solo nombres)
+- Generar cuadro aleatorio y marcar ganadores: solo admin (sesión por contraseña)
+- No exponer endpoints públicos de generación de cuadro

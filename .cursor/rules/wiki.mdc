@@ -1,0 +1,13 @@
+---
+description: Mantener y consultar la LLM Wiki del proyecto
+globs:
+  - docs/**/*
+---
+
+# Wiki del proyecto
+
+- Fuentes inmutables en `docs/raw/` (brief).
+- Páginas mantenidas en `docs/wiki/`.
+- Ante cambios de contenido o diseño relevantes, actualizar la wiki (sin duplicar).
+- No inventar actividades, horarios ni datos fuera de brief/wiki.
+- Documentar en español.

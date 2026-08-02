@@ -1,0 +1,21 @@
+# Campeonatos
+
+## Modalidades iniciales
+
+| Slug | Nombre | Tipo entrada |
+|------|--------|--------------|
+| ping-pong | Ping pong | individual (1 nombre) |
+| ajedrez | Ajedrez | individual (1 nombre) |
+| fronton | Frontón | pareja (2 nombres) |
+| padel | Pádel | pareja (2 nombres) |
+| parchis | Parchís | pareja (2 nombres) |
+| mus | Mus | pareja (2 nombres) |
+| brisca | Brisca | trío (3 nombres) |
+
+## Reglas
+
+1. Cualquiera puede apuntarse escribiendo el nombre o los de la pareja/trío (sin login).
+2. Solo el admin genera el cuadro eliminatorio aleatorio.
+3. Solo el admin marca el ganador de cada partido y avanza rondas.
+4. El público ve la lista de inscritos y el cuadro en solo lectura.
+5. El admin puede crear campeonatos adicionales y cerrar inscripciones.

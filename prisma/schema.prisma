@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EntryType {
+  individual
+  pareja
+  trio
+}
+
+enum ChampionshipStatus {
+  open
+  bracket
+  finished
+}
+
+model Championship {
+  id               String             @id @default(cuid())
+  name             String
+  slug             String             @unique
+  entryType        EntryType
+  registrationOpen Boolean            @default(true)
+  status           ChampionshipStatus @default(open)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  entries          Entry[]
+  matches          Match[]
+}
+
+model Entry {
+  id             String       @id @default(cuid())
+  championshipId String
+  championship   Championship @relation(fields: [championshipId], references: [id], onDelete: Cascade)
+  player1        String
+  player2        String?
+  player3        String?
+  createdAt      DateTime     @default(now())
+  matchesAsA     Match[]      @relation("MatchEntryA")
+  matchesAsB     Match[]      @relation("MatchEntryB")
+  wins           Match[]      @relation("MatchWinner")
+
+  @@index([championshipId])
+}
+
+model Match {
+  id             String       @id @default(cuid())
+  championshipId String
+  championship   Championship @relation(fields: [championshipId], references: [id], onDelete: Cascade)
+  round          Int
+  position       Int
+  entryAId       String?
+  entryBId       String?
+  winnerId       String?
+  nextMatchId    String?
+  entryA         Entry?       @relation("MatchEntryA", fields: [entryAId], references: [id], onDelete: SetNull)
+  entryB         Entry?       @relation("MatchEntryB", fields: [entryBId], references: [id], onDelete: SetNull)
+  winner         Entry?       @relation("MatchWinner", fields: [winnerId], references: [id], onDelete: SetNull)
+  nextMatch      Match?       @relation("MatchProgression", fields: [nextMatchId], references: [id], onDelete: SetNull)
+  previousMatches Match[]     @relation("MatchProgression")
+
+  @@unique([championshipId, round, position])
+  @@index([championshipId])
+}

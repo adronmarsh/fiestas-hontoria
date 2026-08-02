@@ -1,0 +1,238 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-display);
+  --font-display: var(--font-display);
+  --font-brush: var(--font-brush);
+  --font-accent: var(--font-accent);
+  --color-fiesta-magenta: var(--fiesta-magenta);
+  --color-fiesta-yellow: var(--fiesta-yellow);
+  --color-fiesta-cyan: var(--fiesta-cyan);
+  --color-fiesta-ink: var(--fiesta-ink);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --fiesta-magenta: #e91e8c;
+  --fiesta-yellow: #f5d000;
+  --fiesta-cyan: #00b4c8;
+  --fiesta-ink: #0a0a0a;
+  --background: #faf7f2;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #e91e8c;
+  --primary-foreground: #ffffff;
+  --secondary: #00b4c8;
+  --secondary-foreground: #0a0a0a;
+  --muted: #f0ebe3;
+  --muted-foreground: #4a4a4a;
+  --accent: #f5d000;
+  --accent-foreground: #0a0a0a;
+  --destructive: #dc2626;
+  --border: #e5ddd0;
+  --input: #e5ddd0;
+  --ring: #e91e8c;
+  --chart-1: #e91e8c;
+  --chart-2: #f5d000;
+  --chart-3: #00b4c8;
+  --chart-4: #0a0a0a;
+  --chart-5: #ff6b35;
+  --radius: 0.5rem;
+  --sidebar: #faf7f2;
+  --sidebar-foreground: #0a0a0a;
+  --sidebar-primary: #e91e8c;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f5d000;
+  --sidebar-accent-foreground: #0a0a0a;
+  --sidebar-border: #e5ddd0;
+  --sidebar-ring: #e91e8c;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans scroll-smooth;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display), Impact, sans-serif;
+  }
+  .font-brush {
+    font-family: var(--font-brush), cursive;
+  }
+  .font-accent {
+    font-family: var(--font-accent), cursive;
+  }
+
+  .splatter-bg {
+    background-color: var(--background);
+    background-image:
+      radial-gradient(ellipse 40% 30% at 0% 0%, color-mix(in srgb, var(--fiesta-yellow) 55%, transparent), transparent),
+      radial-gradient(ellipse 35% 28% at 100% 0%, color-mix(in srgb, var(--fiesta-cyan) 50%, transparent), transparent),
+      radial-gradient(ellipse 50% 35% at 50% 100%, color-mix(in srgb, var(--fiesta-magenta) 45%, transparent), transparent),
+      radial-gradient(circle at 15% 70%, color-mix(in srgb, var(--fiesta-cyan) 20%, transparent) 0 2px, transparent 3px),
+      radial-gradient(circle at 80% 40%, color-mix(in srgb, var(--fiesta-magenta) 25%, transparent) 0 3px, transparent 4px);
+  }
+
+  .day-banner {
+    display: inline-block;
+    background: var(--fiesta-ink);
+    color: white;
+    font-family: var(--font-brush), cursive;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 0.35rem 1rem;
+    transform: rotate(-1deg);
+    clip-path: polygon(2% 8%, 98% 0%, 100% 92%, 0% 100%);
+  }
+
+  .day-banner .day-num {
+    color: var(--fiesta-yellow);
+  }
+
+  .hero-title {
+    font-family: var(--font-display), Impact, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 0.95;
+    text-shadow:
+      3px 3px 0 #000,
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000;
+  }
+
+  .bunting {
+    height: 28px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--fiesta-magenta) 0 18px,
+      var(--fiesta-yellow) 18px 36px,
+      var(--fiesta-cyan) 36px 54px
+    );
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      97% 100%,
+      94% 0,
+      91% 100%,
+      88% 0,
+      85% 100%,
+      82% 0,
+      79% 100%,
+      76% 0,
+      73% 100%,
+      70% 0,
+      67% 100%,
+      64% 0,
+      61% 100%,
+      58% 0,
+      55% 100%,
+      52% 0,
+      49% 100%,
+      46% 0,
+      43% 100%,
+      40% 0,
+      37% 100%,
+      34% 0,
+      31% 100%,
+      28% 0,
+      25% 100%,
+      22% 0,
+      19% 100%,
+      16% 0,
+      13% 100%,
+      10% 0,
+      7% 100%,
+      4% 0,
+      1% 100%,
+      0 0
+    );
+  }
+
+  @keyframes rock-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      filter: drop-shadow(0 0 0 transparent);
+    }
+    50% {
+      filter: drop-shadow(0 0 12px color-mix(in srgb, var(--fiesta-yellow) 70%, transparent));
+    }
+  }
+
+  .animate-rock-in {
+    animation: rock-in 0.7s ease-out both;
+  }
+
+  .animate-rock-in-delay {
+    animation: rock-in 0.7s ease-out 0.15s both;
+  }
+
+  .animate-glow {
+    animation: pulse-glow 2.8s ease-in-out infinite;
+  }
+}

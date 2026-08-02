@@ -1,0 +1,13 @@
+---
+description: Modern Web Guidance (Google) al pulir UI
+globs:
+  - app/**/*
+  - components/**/*
+---
+
+# Modern Web Guidance
+
+Referencia: https://developer.chrome.com/docs/modern-web-guidance
+
+Al revisar o pulir: accesibilidad, contraste, responsive (375px), rendimiento básico, SEO (title + description).
+Mobile-first. Textos legibles. Controles con tamaño táctil adecuado.
