@@ -175,7 +175,7 @@ export async function generateBracket(championshipId: string): Promise<ActionRes
   revalidatePath(`/campeonatos/${championship.slug}`);
   revalidatePath(`/admin/campeonatos/${championship.slug}`);
   revalidatePath("/admin/campeonatos");
-  revalidatePath("/programa");
+  revalidatePath("/campeonatos");
   return { ok: true, message: "Cuadro generado" };
 }
 
@@ -232,7 +232,7 @@ export async function setMatchWinner(
 
   revalidatePath(`/campeonatos/${match.championship.slug}`);
   revalidatePath(`/admin/campeonatos/${match.championship.slug}`);
-  revalidatePath("/programa");
+  revalidatePath("/campeonatos");
   return { ok: true };
 }
 
@@ -264,7 +264,7 @@ export async function updateMatchSchedule(
 
   revalidatePath(`/campeonatos/${match.championship.slug}`);
   revalidatePath(`/admin/campeonatos/${match.championship.slug}`);
-  revalidatePath("/programa");
+  revalidatePath("/campeonatos");
   return { ok: true, message: "Horario actualizado" };
 }
 

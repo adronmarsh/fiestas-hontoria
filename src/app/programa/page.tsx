@@ -1,60 +1,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DayBanner } from "@/components/day-banner";
-import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import {
-  buildMatchCalendarItems,
-  buildProgramaCalendarItems,
-  groupCalendarByDay,
-} from "@/lib/calendar";
-import { prisma } from "@/lib/prisma";
-import { NOTAS_INTERES, PROGRAMA_PDF_HREF } from "@/lib/programa";
+import { PROGRAMA, NOTAS_INTERES, PROGRAMA_PDF_HREF } from "@/lib/programa";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Programa",
-  description:
-    "Calendario de la Semana Cultural 2026 y enfrentamientos de campeonatos en Hontoria de la Cantera.",
+  description: "Programa de la Semana Cultural 2026 en Hontoria de la Cantera.",
 };
 
-export const dynamic = "force-dynamic";
-
-export default async function ProgramaPage() {
-  const matches = await prisma.match.findMany({
-    where: { scheduledAt: { not: null } },
-    orderBy: { scheduledAt: "asc" },
-    include: {
-      championship: { select: { name: true, slug: true } },
-      entryA: true,
-      entryB: true,
-    },
-  });
-
-  const items = [
-    ...buildProgramaCalendarItems(),
-    ...buildMatchCalendarItems(
-      matches.map((m) => ({
-        id: m.id,
-        scheduledAt: m.scheduledAt!,
-        championship: m.championship,
-        entryA: m.entryA,
-        entryB: m.entryB,
-      }))
-    ),
-  ];
-
-  const days = groupCalendarByDay(items);
-
+export default function ProgramaPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
       <p className="font-accent text-2xl font-bold text-fiesta-cyan">Agosto 2026</p>
       <h1 className="font-brush text-5xl text-fiesta-magenta sm:text-6xl">
-        Calendario
+        Programa Semana Cultural
       </h1>
       <p className="mt-3 max-w-2xl text-muted-foreground">
-        Programa cultural y enfrentamientos de campeonatos con hora. Los horarios
-        pueden variar por organización.
+        Todas las actividades del programa oficial. Los horarios pueden variar por
+        organización.
       </p>
       <div className="mt-6">
         <Link
@@ -71,59 +36,30 @@ export default async function ProgramaPage() {
         </Link>
       </div>
 
-      <div className="mt-10 flex flex-col gap-10">
-        {days.map((day) => (
-          <section key={day.dayKey} id={`${day.dayNumber}-agosto`}>
+      <div className="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        {PROGRAMA.map((day) => (
+          <article key={day.id} id={day.id}>
             <DayBanner
               as="h2"
               weekday={day.weekday}
               dayNumber={day.dayNumber}
             />
             <ul className="mt-4 flex flex-col gap-3">
-              {day.items.map((ev) => (
-                <li
-                  key={ev.id}
-                  className={cn(
-                    "border-l-4 pl-3",
-                    ev.kind === "campeonato"
-                      ? "border-fiesta-cyan"
-                      : "border-fiesta-yellow"
+              {day.events.map((ev) => (
+                <li key={`${day.id}-${ev.title}`} className="border-l-4 border-fiesta-yellow pl-3">
+                  {ev.time && (
+                    <p className="text-sm font-bold uppercase tracking-wide text-fiesta-magenta">
+                      {ev.time} h
+                    </p>
                   )}
-                >
-                  <div className="flex flex-wrap items-center gap-2">
-                    {ev.timeLabel && (
-                      <p className="text-sm font-bold uppercase tracking-wide text-fiesta-magenta">
-                        {ev.timeLabel} h
-                      </p>
-                    )}
-                    <Badge
-                      variant="outline"
-                      className={
-                        ev.kind === "campeonato"
-                          ? "border-fiesta-cyan text-fiesta-cyan"
-                          : ""
-                      }
-                    >
-                      {ev.kind === "campeonato" ? "Campeonato" : "Programa"}
-                    </Badge>
-                  </div>
-                  {ev.href ? (
-                    <Link
-                      href={ev.href}
-                      className="font-semibold uppercase tracking-wide hover:text-fiesta-magenta"
-                    >
-                      {ev.title}
-                    </Link>
-                  ) : (
-                    <p className="font-semibold uppercase tracking-wide">{ev.title}</p>
-                  )}
+                  <p className="font-semibold uppercase tracking-wide">{ev.title}</p>
                   {ev.note && (
                     <p className="text-sm text-muted-foreground">{ev.note}</p>
                   )}
                 </li>
               ))}
             </ul>
-          </section>
+          </article>
         ))}
       </div>
 

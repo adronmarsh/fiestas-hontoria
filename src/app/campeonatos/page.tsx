@@ -1,21 +1,34 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
-import { entryTypeLabel, statusLabel } from "@/lib/championships";
+import { ChampionshipsSchedule } from "@/components/championships-schedule";
 import { Badge } from "@/components/ui/badge";
+import { entryTypeLabel, statusLabel } from "@/lib/championships";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Campeonatos",
-  description: "Inscripción y cuadros de los campeonatos de las fiestas 2026.",
+  description:
+    "Inscripción, cuadros y horario de enfrentamientos de las fiestas 2026.",
 };
 
 export const dynamic = "force-dynamic";
 
 export default async function CampeonatosPage() {
-  const championships = await prisma.championship.findMany({
-    orderBy: { name: "asc" },
-    include: { _count: { select: { entries: true } } },
-  });
+  const [championships, matches] = await Promise.all([
+    prisma.championship.findMany({
+      orderBy: { name: "asc" },
+      include: { _count: { select: { entries: true } } },
+    }),
+    prisma.match.findMany({
+      where: { scheduledAt: { not: null } },
+      orderBy: { scheduledAt: "asc" },
+      include: {
+        championship: { select: { name: true, slug: true } },
+        entryA: true,
+        entryB: true,
+      },
+    }),
+  ]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
@@ -23,7 +36,9 @@ export default async function CampeonatosPage() {
         Campeonatos
       </h1>
       <p className="mt-3 max-w-2xl text-muted-foreground">
-        Apúntate escribiendo tu nombre. Los emparejamientos los genera el organizador.
+        Apúntate escribiendo tu nombre. Los emparejamientos y horarios los gestiona
+        el organizador. Mira el horario abajo para no coincidir en dos sitios a la
+        vez.
       </p>
 
       <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -53,6 +68,16 @@ export default async function CampeonatosPage() {
           Aún no hay campeonatos. El organizador los creará desde el panel admin.
         </p>
       )}
+
+      <ChampionshipsSchedule
+        matches={matches.map((m) => ({
+          id: m.id,
+          scheduledAt: m.scheduledAt!,
+          championship: m.championship,
+          entryA: m.entryA,
+          entryB: m.entryB,
+        }))}
+      />
     </div>
   );
 }
