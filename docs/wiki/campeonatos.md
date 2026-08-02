@@ -19,3 +19,4 @@
 3. Solo el admin marca el ganador de cada partido y avanza rondas.
 4. El público ve la lista de inscritos y el cuadro en solo lectura.
 5. El admin puede crear campeonatos adicionales y cerrar inscripciones.
+6. El admin asigna fecha y hora a cada enfrentamiento; aparecen en el calendario (`/programa`).

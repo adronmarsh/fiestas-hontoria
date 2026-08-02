@@ -175,6 +175,7 @@ export async function generateBracket(championshipId: string): Promise<ActionRes
   revalidatePath(`/campeonatos/${championship.slug}`);
   revalidatePath(`/admin/campeonatos/${championship.slug}`);
   revalidatePath("/admin/campeonatos");
+  revalidatePath("/programa");
   return { ok: true, message: "Cuadro generado" };
 }
 
@@ -231,7 +232,40 @@ export async function setMatchWinner(
 
   revalidatePath(`/campeonatos/${match.championship.slug}`);
   revalidatePath(`/admin/campeonatos/${match.championship.slug}`);
+  revalidatePath("/programa");
   return { ok: true };
+}
+
+export async function updateMatchSchedule(
+  matchId: string,
+  scheduledAtIso: string | null
+): Promise<ActionResult> {
+  await requireAdmin();
+
+  const match = await prisma.match.findUnique({
+    where: { id: matchId },
+    include: { championship: true },
+  });
+  if (!match) return { ok: false, error: "Partido no encontrado" };
+
+  let scheduledAt: Date | null = null;
+  if (scheduledAtIso && scheduledAtIso.trim()) {
+    const parsed = new Date(scheduledAtIso);
+    if (Number.isNaN(parsed.getTime())) {
+      return { ok: false, error: "Fecha u hora inválida" };
+    }
+    scheduledAt = parsed;
+  }
+
+  await prisma.match.update({
+    where: { id: matchId },
+    data: { scheduledAt },
+  });
+
+  revalidatePath(`/campeonatos/${match.championship.slug}`);
+  revalidatePath(`/admin/campeonatos/${match.championship.slug}`);
+  revalidatePath("/programa");
+  return { ok: true, message: "Horario actualizado" };
 }
 
 export async function deleteChampionship(championshipId: string): Promise<ActionResult> {

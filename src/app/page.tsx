@@ -17,7 +17,7 @@ export default function HomePage() {
           Esta semana en el pueblo
         </h2>
         <p className="mt-2 max-w-2xl text-muted-foreground">
-          Un vistazo al programa. Consulta el calendario completo día a día.
+          Un vistazo al programa. Consulta el calendario con actos y partidos.
         </p>
         <ul className="mt-8 grid gap-6 md:grid-cols-3">
           {highlightDays.map((day) => (
@@ -43,7 +43,7 @@ export default function HomePage() {
             href="/programa"
             className={cn(buttonVariants(), "font-display tracking-wide")}
           >
-            Programa completo
+            Ver calendario
           </Link>
           <Link
             href={PROGRAMA_PDF_HREF}

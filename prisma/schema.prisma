@@ -57,6 +57,7 @@ model Match {
   entryBId       String?
   winnerId       String?
   nextMatchId    String?
+  scheduledAt    DateTime?
   entryA         Entry?       @relation("MatchEntryA", fields: [entryAId], references: [id], onDelete: SetNull)
   entryB         Entry?       @relation("MatchEntryB", fields: [entryBId], references: [id], onDelete: SetNull)
   winner         Entry?       @relation("MatchWinner", fields: [winnerId], references: [id], onDelete: SetNull)
@@ -65,4 +66,5 @@ model Match {
 
   @@unique([championshipId, round, position])
   @@index([championshipId])
+  @@index([scheduledAt])
 }

@@ -49,7 +49,7 @@ export function Hero() {
               "bg-fiesta-magenta font-display text-lg tracking-wide text-white hover:bg-fiesta-magenta/90"
             )}
           >
-            Ver programa
+            Ver calendario
           </Link>
           <Link
             href="/campeonatos"

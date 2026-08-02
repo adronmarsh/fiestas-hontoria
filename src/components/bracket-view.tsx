@@ -1,6 +1,8 @@
 import type { Entry, Match } from "@prisma/client";
 import { entryLabel, roundLabel } from "@/lib/bracket";
+import { formatMatchSchedule } from "@/lib/datetime";
 import { Badge } from "@/components/ui/badge";
+import { MatchScheduleEditor } from "@/components/match-schedule-editor";
 import { SetWinnerButtons } from "@/components/set-winner-buttons";
 
 type MatchWithEntries = Match & {
@@ -56,8 +58,11 @@ export function BracketView({
                       ? "BYE"
                       : "Por determinar";
                   const isBye =
-                    (match.entryA && !match.entryB) ||
-                    (!match.entryA && match.entryB);
+                    Boolean(
+                      (match.entryA && !match.entryB) ||
+                        (!match.entryA && match.entryB)
+                    );
+                  const scheduleLabel = formatMatchSchedule(match.scheduledAt);
 
                   return (
                     <li
@@ -96,6 +101,26 @@ export function BracketView({
                           <Badge variant="outline">Bye</Badge>
                         ) : null}
                       </div>
+
+                      {scheduleLabel ? (
+                        <p className="mt-2 text-sm font-semibold text-fiesta-magenta">
+                          {scheduleLabel}
+                        </p>
+                      ) : admin && !isBye ? (
+                        <p className="mt-2 text-sm text-muted-foreground">Sin hora</p>
+                      ) : !admin && !isBye ? (
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Por confirmar
+                        </p>
+                      ) : null}
+
+                      {admin && !isBye && (
+                        <MatchScheduleEditor
+                          matchId={match.id}
+                          scheduledAt={match.scheduledAt}
+                        />
+                      )}
+
                       {admin &&
                         !match.winnerId &&
                         match.entryAId &&
