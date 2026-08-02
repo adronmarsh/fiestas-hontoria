@@ -14,3 +14,10 @@
 - No inventar datos: solo brief + wiki.
 - Responder y documentar en español.
 - El cuadro aleatorio solo lo genera el admin.
+
+## Despliegue
+
+- Repo: https://github.com/adronmarsh/fiestas-hontoria
+- Producción: https://fiestas-hontoria.vercel.app
+- Base de datos: Neon (`fiestas-hontoria`)
+- Admin: `/admin` con `ADMIN_PASSWORD` en variables de entorno
