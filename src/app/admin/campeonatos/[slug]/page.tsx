@@ -46,7 +46,11 @@ export default async function AdminChampionshipDetailPage({ params }: Props) {
   const hasResults = championship.matches.some(
     (m) => m.winnerId && m.entryAId && m.entryBId
   );
-  const dates = championshipDatesLabel(championship.startDay, championship.endDay);
+  const dates = championshipDatesLabel(
+    championship.startDay,
+    championship.endDay,
+    championship.startTime
+  );
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">

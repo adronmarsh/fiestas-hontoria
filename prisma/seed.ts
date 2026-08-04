@@ -7,12 +7,21 @@ const championships: {
   slug: string;
   entryType: EntryType;
   pairingMode?: PairingMode;
+  organizer?: string;
   startDay?: number;
   endDay?: number;
+  startTime?: string;
 }[] = [
   { name: "Ping pong", slug: "ping-pong", entryType: "individual" },
   { name: "Ajedrez", slug: "ajedrez", entryType: "individual" },
-  { name: "Frontón", slug: "fronton", entryType: "pareja" },
+  {
+    name: "Frontón",
+    slug: "fronton",
+    entryType: "pareja",
+    organizer: "Adrián",
+    startDay: 10,
+    startTime: "10:30",
+  },
   {
     name: "Pádel",
     slug: "padel",
@@ -23,7 +32,21 @@ const championships: {
   },
   { name: "Parchís", slug: "parchis", entryType: "pareja" },
   { name: "Mus", slug: "mus", entryType: "pareja" },
-  { name: "Brisca", slug: "brisca", entryType: "trio" },
+  {
+    name: "Brisca",
+    slug: "brisca",
+    entryType: "trio",
+    startDay: 10,
+    startTime: "18:30",
+  },
+  {
+    name: "Concurso de triples",
+    slug: "triples",
+    entryType: "individual",
+    organizer: "Javi (Fonta)",
+    startDay: 12,
+    startTime: "18:00",
+  },
 ];
 
 async function main() {
@@ -34,16 +57,20 @@ async function main() {
         name: c.name,
         entryType: c.entryType,
         pairingMode: c.pairingMode ?? "as_registered",
-        startDay: c.startDay ?? null,
-        endDay: c.endDay ?? null,
+        ...(c.organizer !== undefined ? { organizer: c.organizer } : {}),
+        ...(c.startDay !== undefined ? { startDay: c.startDay } : {}),
+        ...(c.endDay !== undefined ? { endDay: c.endDay } : {}),
+        ...(c.startTime !== undefined ? { startTime: c.startTime } : {}),
       },
       create: {
         name: c.name,
         slug: c.slug,
         entryType: c.entryType,
         pairingMode: c.pairingMode ?? "as_registered",
+        organizer: c.organizer ?? null,
         startDay: c.startDay ?? null,
         endDay: c.endDay ?? null,
+        startTime: c.startTime ?? null,
       },
     });
   }

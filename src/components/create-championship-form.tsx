@@ -81,6 +81,15 @@ export function CreateChampionshipForm() {
               placeholder="13"
             />
           </div>
+          <div className="flex w-24 flex-col gap-2">
+            <Label htmlFor="startTime">Hora</Label>
+            <Input
+              id="startTime"
+              name="startTime"
+              type="time"
+              placeholder="18:30"
+            />
+          </div>
         </div>
         <Button type="submit" disabled={pending}>
           {pending ? "Creando…" : "Crear"}

@@ -40,6 +40,8 @@ model Championship {
   startDay         Int?
   /// Día de fin en agosto (1–31), opcional
   endDay           Int?
+  /// Hora de inicio HH:mm (Europe/Madrid), opcional
+  startTime        String?
   registrationOpen Boolean            @default(true)
   status           ChampionshipStatus @default(open)
   createdAt        DateTime           @default(now())

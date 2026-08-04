@@ -45,8 +45,10 @@ export async function createChampionship(
     pairingModeRaw === "random_pairs" ? "random_pairs" : "as_registered";
   const startDayRaw = String(formData.get("startDay") ?? "").trim();
   const endDayRaw = String(formData.get("endDay") ?? "").trim();
+  const startTimeRaw = String(formData.get("startTime") ?? "").trim();
   const startDay = startDayRaw ? Number(startDayRaw) : null;
   const endDay = endDayRaw ? Number(endDayRaw) : null;
+  const startTime = startTimeRaw || null;
 
   if (!name) return { ok: false, error: "Nombre obligatorio" };
   if (pairingMode === "random_pairs") {
@@ -60,6 +62,9 @@ export async function createChampionship(
     (endDay !== null && (Number.isNaN(endDay) || endDay < 1 || endDay > 31))
   ) {
     return { ok: false, error: "Días de agosto inválidos (1–31)" };
+  }
+  if (startTime && !/^\d{1,2}:\d{2}$/.test(startTime)) {
+    return { ok: false, error: "Hora inválida (usa HH:mm)" };
   }
 
   let slug = slugify(name);
@@ -77,6 +82,7 @@ export async function createChampionship(
       pairingMode,
       startDay,
       endDay,
+      startTime,
     },
   });
 

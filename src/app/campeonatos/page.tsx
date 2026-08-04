@@ -61,8 +61,8 @@ export default async function CampeonatosPage() {
                 {c.pairingMode === "random_pairs"
                   ? "Individual → parejas al azar"
                   : entryTypeLabel(c.entryType)}
-                {championshipDatesLabel(c.startDay, c.endDay)
-                  ? ` · ${championshipDatesLabel(c.startDay, c.endDay)}`
+                {championshipDatesLabel(c.startDay, c.endDay, c.startTime)
+                  ? ` · ${championshipDatesLabel(c.startDay, c.endDay, c.startTime)}`
                   : ""}
                 {c.organizer ? ` · Org: ${c.organizer}` : ""}
               </p>

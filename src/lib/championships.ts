@@ -20,17 +20,22 @@ export function pairingModeLabel(mode: PairingMode): string {
   }
 }
 
-/** Texto corto para ficha pública, p. ej. "10–13 agosto". */
+/** Texto corto para ficha pública, p. ej. "10 agosto · 18:30" o "10–13 agosto". */
 export function championshipDatesLabel(
   startDay: number | null | undefined,
-  endDay: number | null | undefined
+  endDay: number | null | undefined,
+  startTime?: string | null
 ): string | null {
-  if (!startDay && !endDay) return null;
+  if (!startDay && !endDay && !startTime) return null;
+  let datePart: string | null = null;
   if (startDay && endDay && startDay !== endDay) {
-    return `${startDay}–${endDay} agosto`;
+    datePart = `${startDay}–${endDay} agosto`;
+  } else if (startDay || endDay) {
+    datePart = `${startDay ?? endDay} agosto`;
   }
-  const day = startDay ?? endDay;
-  return `${day} agosto`;
+  const timePart = startTime?.trim() || null;
+  if (datePart && timePart) return `${datePart} · ${timePart}`;
+  return datePart ?? (timePart ? `A las ${timePart}` : null);
 }
 
 export function requiredPlayers(type: EntryType): number {

@@ -39,7 +39,11 @@ export default async function ChampionshipPage({ params }: Props) {
   if (!championship) notFound();
 
   const registrations = championship.entries.filter((e) => e.kind === "registration");
-  const dates = championshipDatesLabel(championship.startDay, championship.endDay);
+  const dates = championshipDatesLabel(
+    championship.startDay,
+    championship.endDay,
+    championship.startTime
+  );
   const modalityNote =
     championship.pairingMode === "random_pairs"
       ? "Inscripción individual · parejas al azar en el cuadro"

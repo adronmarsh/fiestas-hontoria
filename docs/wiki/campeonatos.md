@@ -6,11 +6,12 @@
 |------|--------|--------------|-------|
 | ping-pong | Ping pong | individual (1 nombre) | |
 | ajedrez | Ajedrez | individual (1 nombre) | |
-| fronton | Frontón | pareja (2 nombres) | |
+| fronton | Frontón | pareja (2 nombres) | Lun 10 ago · 10:30 · Org. Adrián |
 | padel | Pádel | individual → parejas aleatorias | 10–13 agosto |
 | parchis | Parchís | pareja (2 nombres) | |
 | mus | Mus | pareja (2 nombres) | |
-| brisca | Brisca | trío (3 nombres) | |
+| brisca | Brisca | trío (3 nombres) | 10 ago · 18:30 |
+| triples | Concurso de triples | individual (1 nombre) | 12 ago · 18:00 · Org. Javi (Fonta) |
 
 ## Reglas
 
@@ -23,4 +24,4 @@
 7. El cuadro se puede generar aleatorio o manual (orden de emparejamientos).
 8. El admin asigna fecha y hora a cada enfrentamiento; el horario vive en `/campeonatos` junto con los actos del programa, con filtro por jugador.
 9. Modalidad reutilizable **parejas aleatorias** (`pairingMode: random_pairs`): inscripción individual; al generar el cuadro se forman parejas al azar; si el número es impar, uno se queda sin pareja.
-10. Los campeonatos pueden tener rango de días en agosto (`startDay` / `endDay`).
+10. Los campeonatos pueden tener rango de días en agosto (`startDay` / `endDay`) y hora de inicio (`startTime`).
