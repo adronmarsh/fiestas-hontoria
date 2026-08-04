@@ -1,4 +1,4 @@
-import type { EntryType } from "@prisma/client";
+import type { EntryType, PairingMode } from "@prisma/client";
 
 export function entryTypeLabel(type: EntryType): string {
   switch (type) {
@@ -9,6 +9,28 @@ export function entryTypeLabel(type: EntryType): string {
     case "trio":
       return "Por tríos";
   }
+}
+
+export function pairingModeLabel(mode: PairingMode): string {
+  switch (mode) {
+    case "as_registered":
+      return "Según inscripción";
+    case "random_pairs":
+      return "Parejas aleatorias al generar cuadro";
+  }
+}
+
+/** Texto corto para ficha pública, p. ej. "10–13 agosto". */
+export function championshipDatesLabel(
+  startDay: number | null | undefined,
+  endDay: number | null | undefined
+): string | null {
+  if (!startDay && !endDay) return null;
+  if (startDay && endDay && startDay !== endDay) {
+    return `${startDay}–${endDay} agosto`;
+  }
+  const day = startDay ?? endDay;
+  return `${day} agosto`;
 }
 
 export function requiredPlayers(type: EntryType): number {

@@ -10,6 +10,7 @@ import {
 } from "@/lib/auth";
 import { buildBracketSeeds } from "@/lib/bracket";
 import { slugify } from "@/lib/championships";
+import { formRandomPairs } from "@/lib/pairing";
 import { prisma } from "@/lib/prisma";
 
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
@@ -38,10 +39,27 @@ export async function createChampionship(
   await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
   const organizer = String(formData.get("organizer") ?? "").trim();
-  const entryType = String(formData.get("entryType") ?? "");
+  let entryType = String(formData.get("entryType") ?? "");
+  const pairingModeRaw = String(formData.get("pairingMode") ?? "as_registered");
+  const pairingMode =
+    pairingModeRaw === "random_pairs" ? "random_pairs" : "as_registered";
+  const startDayRaw = String(formData.get("startDay") ?? "").trim();
+  const endDayRaw = String(formData.get("endDay") ?? "").trim();
+  const startDay = startDayRaw ? Number(startDayRaw) : null;
+  const endDay = endDayRaw ? Number(endDayRaw) : null;
+
   if (!name) return { ok: false, error: "Nombre obligatorio" };
+  if (pairingMode === "random_pairs") {
+    entryType = "individual";
+  }
   if (!["individual", "pareja", "trio"].includes(entryType)) {
     return { ok: false, error: "Modalidad inválida" };
+  }
+  if (
+    (startDay !== null && (Number.isNaN(startDay) || startDay < 1 || startDay > 31)) ||
+    (endDay !== null && (Number.isNaN(endDay) || endDay < 1 || endDay > 31))
+  ) {
+    return { ok: false, error: "Días de agosto inválidos (1–31)" };
   }
 
   let slug = slugify(name);
@@ -56,6 +74,9 @@ export async function createChampionship(
       slug,
       organizer: organizer || null,
       entryType: entryType as "individual" | "pareja" | "trio",
+      pairingMode,
+      startDay,
+      endDay,
     },
   });
 
@@ -117,6 +138,7 @@ export async function deleteEntry(entryId: string): Promise<ActionResult> {
 
   if (hasMatches > 0) {
     await clearMatches(entry.championshipId);
+    await clearTeamEntries(entry.championshipId);
     await prisma.championship.update({
       where: { id: entry.championshipId },
       data: { status: "open" },
@@ -142,6 +164,7 @@ export async function clearBracket(championshipId: string): Promise<ActionResult
   if (!championship) return { ok: false, error: "No encontrado" };
 
   await clearMatches(championshipId);
+  await clearTeamEntries(championshipId);
   await prisma.championship.update({
     where: { id: championshipId },
     data: { status: "open" },
@@ -161,6 +184,39 @@ async function clearMatches(championshipId: string) {
     data: { nextMatchId: null },
   });
   await prisma.match.deleteMany({ where: { championshipId } });
+}
+
+async function clearTeamEntries(championshipId: string) {
+  await prisma.entry.deleteMany({
+    where: { championshipId, kind: "team" },
+  });
+}
+
+async function materializePairTeams(
+  championshipId: string,
+  registrationEntries: { id: string; player1: string }[],
+  randomize: boolean
+): Promise<string[]> {
+  await clearTeamEntries(championshipId);
+
+  const pairs = formRandomPairs(registrationEntries, { randomize });
+  if (pairs.length < 2) {
+    throw new Error("NEED_MORE_PAIRS");
+  }
+
+  const createdIds: string[] = [];
+  for (const p of pairs) {
+    const row = await prisma.entry.create({
+      data: {
+        championshipId,
+        kind: "team",
+        player1: p.player1,
+        player2: p.player2,
+      },
+    });
+    createdIds.push(row.id);
+  }
+  return createdIds;
 }
 
 async function persistBracket(
@@ -205,7 +261,6 @@ async function persistBracket(
       })
   );
 
-  // Bye winners already live in seed.entryA/B of later rounds via createManyAndReturn
   await prisma.championship.update({
     where: { id: championshipId },
     data: { status: "bracket", registrationOpen: false },
@@ -224,9 +279,8 @@ export async function generateBracket(
     include: { entries: true, matches: true },
   });
   if (!championship) return { ok: false, error: "No encontrado" };
-  if (championship.entries.length < 2) {
-    return { ok: false, error: "Se necesitan al menos 2 inscritos" };
-  }
+
+  const registrations = championship.entries.filter((e) => e.kind === "registration");
 
   // winnerId en byes no cuenta como resultado jugado
   const hasPlayedResults = championship.matches.some(
@@ -239,25 +293,73 @@ export async function generateBracket(
     };
   }
 
-  let entryIds: string[];
-  if (mode === "manual") {
-    const order = options.entryOrder ?? [];
-    const validIds = new Set(championship.entries.map((e) => e.id));
-    if (order.length !== championship.entries.length) {
-      return { ok: false, error: "El orden manual debe incluir a todos los inscritos" };
-    }
-    if (!order.every((id) => validIds.has(id))) {
-      return { ok: false, error: "Hay inscritos inválidos en el orden manual" };
-    }
-    entryIds = order;
-  } else {
-    entryIds = championship.entries.map((e) => e.id);
-  }
-
   try {
-    await persistBracket(championshipId, entryIds, mode === "random");
+    if (championship.pairingMode === "random_pairs") {
+      if (registrations.length < 3) {
+        return {
+          ok: false,
+          error: "Se necesitan al menos 3 inscritos para formar parejas y un cuadro",
+        };
+      }
+
+      let orderedRegs = registrations;
+      if (mode === "manual") {
+        const order = options.entryOrder ?? [];
+        const validIds = new Set(registrations.map((e) => e.id));
+        if (order.length !== registrations.length) {
+          return {
+            ok: false,
+            error: "El orden manual debe incluir a todos los inscritos",
+          };
+        }
+        if (!order.every((id) => validIds.has(id))) {
+          return { ok: false, error: "Hay inscritos inválidos en el orden manual" };
+        }
+        const byId = new Map(registrations.map((e) => [e.id, e]));
+        orderedRegs = order.map((id) => byId.get(id)!);
+      }
+
+      await clearMatches(championshipId);
+      const teamIds = await materializePairTeams(
+        championshipId,
+        orderedRegs.map((e) => ({ id: e.id, player1: e.player1 })),
+        mode === "random"
+      );
+      // Parejas ya ordenadas/aleatorias: no re-barajar el cuadro
+      await persistBracket(championshipId, teamIds, false);
+    } else {
+      if (registrations.length < 2) {
+        return { ok: false, error: "Se necesitan al menos 2 inscritos" };
+      }
+
+      let entryIds: string[];
+      if (mode === "manual") {
+        const order = options.entryOrder ?? [];
+        const validIds = new Set(registrations.map((e) => e.id));
+        if (order.length !== registrations.length) {
+          return {
+            ok: false,
+            error: "El orden manual debe incluir a todos los inscritos",
+          };
+        }
+        if (!order.every((id) => validIds.has(id))) {
+          return { ok: false, error: "Hay inscritos inválidos en el orden manual" };
+        }
+        entryIds = order;
+      } else {
+        entryIds = registrations.map((e) => e.id);
+      }
+
+      await persistBracket(championshipId, entryIds, mode === "random");
+    }
   } catch (e) {
     console.error("persistBracket failed", e);
+    if (e instanceof Error && e.message === "NEED_MORE_PAIRS") {
+      return {
+        ok: false,
+        error: "No hay suficientes parejas para generar el cuadro",
+      };
+    }
     return { ok: false, error: "No se pudo generar el cuadro. Inténtalo de nuevo." };
   }
 
@@ -267,7 +369,14 @@ export async function generateBracket(
   revalidatePath("/campeonatos");
   return {
     ok: true,
-    message: mode === "manual" ? "Cuadro manual generado" : "Cuadro aleatorio generado",
+    message:
+      championship.pairingMode === "random_pairs"
+        ? mode === "manual"
+          ? "Parejas formadas y cuadro generado"
+          : "Parejas aleatorias y cuadro generados"
+        : mode === "manual"
+          ? "Cuadro manual generado"
+          : "Cuadro aleatorio generado",
   };
 }
 
@@ -277,6 +386,7 @@ export async function regenerateBracket(
 ): Promise<ActionResult> {
   await requireAdmin();
   await clearMatches(championshipId);
+  await clearTeamEntries(championshipId);
   await prisma.championship.update({
     where: { id: championshipId },
     data: { status: "open" },

@@ -4,12 +4,103 @@ import { formatMatchSchedule } from "@/lib/datetime";
 import { Badge } from "@/components/ui/badge";
 import { MatchScheduleEditor } from "@/components/match-schedule-editor";
 import { SetWinnerButtons } from "@/components/set-winner-buttons";
+import { cn } from "@/lib/utils";
 
 type MatchWithEntries = Match & {
   entryA: Entry | null;
   entryB: Entry | null;
   winner: Entry | null;
 };
+
+function sideLabel(
+  match: MatchWithEntries,
+  side: "a" | "b"
+): string {
+  const entry = side === "a" ? match.entryA : match.entryB;
+  const other = side === "a" ? match.entryB : match.entryA;
+  if (entry) return entryLabel(entry);
+  if (other) return side === "b" ? "BYE" : "—";
+  return "Por determinar";
+}
+
+function MatchCard({
+  match,
+  admin,
+}: {
+  match: MatchWithEntries;
+  admin: boolean;
+}) {
+  const aLabel = sideLabel(match, "a");
+  const bLabel = sideLabel(match, "b");
+  const isBye = Boolean(
+    (match.entryA && !match.entryB) || (!match.entryA && match.entryB)
+  );
+  const scheduleLabel = formatMatchSchedule(match.scheduledAt);
+
+  return (
+    <div className="w-[220px] shrink-0 border-2 border-fiesta-ink bg-white p-3 shadow-[3px_3px_0_0_rgba(10,10,10,0.12)] sm:w-[240px]">
+      <div className="flex flex-col gap-1">
+        <p
+          className={cn(
+            "text-sm leading-snug",
+            match.winnerId && match.winnerId === match.entryAId
+              ? "font-bold text-fiesta-cyan"
+              : "font-medium"
+          )}
+        >
+          {aLabel}
+        </p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          vs
+        </p>
+        <p
+          className={cn(
+            "text-sm leading-snug",
+            match.winnerId && match.winnerId === match.entryBId
+              ? "font-bold text-fiesta-cyan"
+              : "font-medium"
+          )}
+        >
+          {bLabel}
+        </p>
+      </div>
+
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        {match.winner ? (
+          <Badge className="bg-fiesta-yellow text-fiesta-ink">
+            Gana: {entryLabel(match.winner)}
+          </Badge>
+        ) : isBye ? (
+          <Badge variant="outline">Bye</Badge>
+        ) : null}
+      </div>
+
+      {scheduleLabel ? (
+        <p className="mt-2 text-xs font-semibold text-fiesta-magenta">
+          {scheduleLabel}
+        </p>
+      ) : admin && !isBye ? (
+        <p className="mt-2 text-xs text-muted-foreground">Sin hora</p>
+      ) : !admin && !isBye ? (
+        <p className="mt-2 text-xs text-muted-foreground">Por confirmar</p>
+      ) : null}
+
+      {admin && !isBye && (
+        <MatchScheduleEditor matchId={match.id} scheduledAt={match.scheduledAt} />
+      )}
+
+      {admin && !match.winnerId && match.entryAId && match.entryBId && (
+        <SetWinnerButtons
+          matchId={match.id}
+          entryAId={match.entryAId}
+          entryBId={match.entryBId}
+          labelA={entryLabel(match.entryA!)}
+          labelB={entryLabel(match.entryB!)}
+        />
+      )}
+    </div>
+  );
+}
 
 export function BracketView({
   matches,
@@ -34,111 +125,65 @@ export function BracketView({
     byRound.set(m.round, list);
   }
 
+  const rounds = [...byRound.keys()].sort((a, b) => a - b);
+
   return (
-    <div className="flex flex-col gap-8 overflow-x-auto">
-      {[...byRound.entries()]
-        .sort(([a], [b]) => a - b)
-        .map(([round, roundMatches]) => (
-          <section key={round}>
-            <h3 className="font-display text-xl tracking-wide text-fiesta-magenta">
-              {roundLabel(round, totalRounds)}
-            </h3>
-            <ul className="mt-3 grid gap-3 sm:grid-cols-2">
-              {roundMatches
-                .sort((a, b) => a.position - b.position)
-                .map((match) => {
-                  const aLabel = match.entryA
-                    ? entryLabel(match.entryA)
-                    : match.entryB && !match.entryA
-                      ? "—"
-                      : "Por determinar";
-                  const bLabel = match.entryB
-                    ? entryLabel(match.entryB)
-                    : match.entryA && !match.entryB
-                      ? "BYE"
-                      : "Por determinar";
-                  const isBye =
-                    Boolean(
-                      (match.entryA && !match.entryB) ||
-                        (!match.entryA && match.entryB)
-                    );
-                  const scheduleLabel = formatMatchSchedule(match.scheduledAt);
+    <div className="-mx-4 overflow-x-auto px-4 pb-2">
+      <div className="flex min-w-min items-stretch gap-0">
+        {rounds.map((round, roundIndex) => {
+          const roundMatches = (byRound.get(round) ?? []).sort(
+            (a, b) => a.position - b.position
+          );
+          const isLast = roundIndex === rounds.length - 1;
 
-                  return (
-                    <li
-                      key={match.id}
-                      className="border-2 border-fiesta-ink bg-white p-4"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex flex-col gap-1">
-                          <p
-                            className={
-                              match.winnerId && match.winnerId === match.entryAId
-                                ? "font-bold text-fiesta-cyan"
-                                : ""
-                            }
-                          >
-                            {aLabel}
-                          </p>
-                          <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                            vs
-                          </p>
-                          <p
-                            className={
-                              match.winnerId && match.winnerId === match.entryBId
-                                ? "font-bold text-fiesta-cyan"
-                                : ""
-                            }
-                          >
-                            {bLabel}
-                          </p>
-                        </div>
-                        {match.winner ? (
-                          <Badge className="bg-fiesta-yellow text-fiesta-ink">
-                            Gana: {entryLabel(match.winner)}
-                          </Badge>
-                        ) : isBye ? (
-                          <Badge variant="outline">Bye</Badge>
-                        ) : null}
-                      </div>
+          return (
+            <div key={round} className="flex items-stretch">
+              <div className="flex flex-col">
+                <h3 className="mb-3 whitespace-nowrap text-center font-display text-sm tracking-wide text-fiesta-magenta sm:text-base">
+                  {roundLabel(round, totalRounds)}
+                </h3>
+                <div
+                  className="flex flex-1 flex-col justify-around gap-6 py-2"
+                  style={{ minHeight: `${Math.max(roundMatches.length, 1) * 140}px` }}
+                >
+                  {roundMatches.map((match) => (
+                    <div key={match.id} className="flex items-center">
+                      <MatchCard match={match} admin={admin} />
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-                      {scheduleLabel ? (
-                        <p className="mt-2 text-sm font-semibold text-fiesta-magenta">
-                          {scheduleLabel}
-                        </p>
-                      ) : admin && !isBye ? (
-                        <p className="mt-2 text-sm text-muted-foreground">Sin hora</p>
-                      ) : !admin && !isBye ? (
-                        <p className="mt-2 text-sm text-muted-foreground">
-                          Por confirmar
-                        </p>
-                      ) : null}
-
-                      {admin && !isBye && (
-                        <MatchScheduleEditor
-                          matchId={match.id}
-                          scheduledAt={match.scheduledAt}
+              {!isLast && (
+                <div
+                  className="mx-1 flex w-8 flex-col justify-around self-stretch pt-10 sm:mx-2 sm:w-12"
+                  aria-hidden
+                >
+                  {roundMatches.map((match) => {
+                    const feedsTop = match.position % 2 === 0;
+                    return (
+                      <div
+                        key={`line-${match.id}`}
+                        className="relative flex h-[120px] items-center"
+                      >
+                        <div
+                          className={cn(
+                            "absolute right-0 w-1/2 border-fiesta-ink/40",
+                            feedsTop
+                              ? "top-1/2 border-t-2 border-r-2 h-1/2 rounded-tr-md"
+                              : "bottom-1/2 border-b-2 border-r-2 h-1/2 rounded-br-md"
+                          )}
                         />
-                      )}
-
-                      {admin &&
-                        !match.winnerId &&
-                        match.entryAId &&
-                        match.entryBId && (
-                          <SetWinnerButtons
-                            matchId={match.id}
-                            entryAId={match.entryAId}
-                            entryBId={match.entryBId}
-                            labelA={entryLabel(match.entryA!)}
-                            labelB={entryLabel(match.entryB!)}
-                          />
-                        )}
-                    </li>
-                  );
-                })}
-            </ul>
-          </section>
-        ))}
+                        <div className="absolute top-1/2 left-1/2 h-0 w-1/2 border-t-2 border-fiesta-ink/40" />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

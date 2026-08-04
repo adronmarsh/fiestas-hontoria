@@ -16,16 +16,20 @@ export function ManualBracketForm({
   championshipId,
   entries,
   hasMatches,
+  pairingMode = "as_registered",
 }: {
   championshipId: string;
   entries: EntryRow[];
   hasMatches: boolean;
   hasResults?: boolean;
+  pairingMode?: "as_registered" | "random_pairs";
 }) {
   const [order, setOrder] = useState(entries.map((e) => e.id));
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const isPairs = pairingMode === "random_pairs";
+  const minEntries = isPairs ? 3 : 2;
 
   useEffect(() => {
     setOrder(entries.map((e) => e.id));
@@ -55,10 +59,12 @@ export function ManualBracketForm({
     });
   }
 
-  if (entries.length < 2) {
+  if (entries.length < minEntries) {
     return (
       <p className="text-sm text-muted-foreground">
-        Hace falta al menos 2 inscritos para el cuadro manual.
+        {isPairs
+          ? "Hace falta al menos 3 inscritos para formar parejas y el cuadro."
+          : "Hace falta al menos 2 inscritos para el cuadro manual."}
       </p>
     );
   }
@@ -67,9 +73,13 @@ export function ManualBracketForm({
     <div className="flex flex-col gap-3 border-2 border-dashed border-fiesta-ink/40 bg-white p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="font-display text-lg tracking-wide">Cuadro manual</p>
+          <p className="font-display text-lg tracking-wide">
+            {isPairs ? "Parejas manuales" : "Cuadro manual"}
+          </p>
           <p className="text-sm text-muted-foreground">
-            Ordena los inscritos: 1º vs 2º, 3º vs 4º… (impar = bye)
+            {isPairs
+              ? "Ordena jugadores: 1º+2º pareja, 3º+4º… (el último impar se queda sin pareja)"
+              : "Ordena los inscritos: 1º vs 2º, 3º vs 4º… (impar = bye)"}
           </p>
         </div>
         <Button
@@ -90,6 +100,7 @@ export function ManualBracketForm({
               if (!entry) return null;
               const pairSlot = Math.floor(index / 2) + 1;
               const side = index % 2 === 0 ? "A" : "B";
+              const isOddLeftover = isPairs && index === order.length - 1 && order.length % 2 === 1;
               return (
                 <li
                   key={id}
@@ -97,8 +108,9 @@ export function ManualBracketForm({
                 >
                   <span className="text-sm">
                     <span className="font-bold text-fiesta-magenta">
-                      P{pairSlot}
-                      {side}.
+                      {isOddLeftover
+                        ? "Sin pareja"
+                        : `P${pairSlot}${side}.`}
                     </span>{" "}
                     {entryLabel(entry)}
                   </span>
@@ -135,12 +147,16 @@ export function ManualBracketForm({
             {pending
               ? "Generando…"
               : hasMatches
-                ? "Regenerar con este orden"
-                : "Generar cuadro con este orden"}
+                ? isPairs
+                  ? "Regenerar parejas y cuadro"
+                  : "Regenerar con este orden"
+                : isPairs
+                  ? "Formar parejas y cuadro"
+                  : "Generar con este orden"}
           </Button>
-          {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
         </>
       )}
+      {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
     </div>
   );
 }

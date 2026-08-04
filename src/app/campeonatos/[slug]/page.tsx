@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { entryTypeLabel, statusLabel } from "@/lib/championships";
+import {
+  championshipDatesLabel,
+  entryTypeLabel,
+  statusLabel,
+} from "@/lib/championships";
 import { entryLabel } from "@/lib/bracket";
 import { EntryForm } from "@/components/entry-form";
 import { BracketView } from "@/components/bracket-view";
@@ -34,6 +38,13 @@ export default async function ChampionshipPage({ params }: Props) {
 
   if (!championship) notFound();
 
+  const registrations = championship.entries.filter((e) => e.kind === "registration");
+  const dates = championshipDatesLabel(championship.startDay, championship.endDay);
+  const modalityNote =
+    championship.pairingMode === "random_pairs"
+      ? "Inscripción individual · parejas al azar en el cuadro"
+      : entryTypeLabel(championship.entryType);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -42,7 +53,8 @@ export default async function ChampionshipPage({ params }: Props) {
             {championship.name}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            {entryTypeLabel(championship.entryType)} · eliminatorias
+            {modalityNote} · eliminatorias
+            {dates ? ` · ${dates}` : ""}
           </p>
           {championship.organizer && (
             <p className="mt-1 text-sm">
@@ -50,11 +62,20 @@ export default async function ChampionshipPage({ params }: Props) {
               {championship.organizer}
             </p>
           )}
+          {championship.pairingMode === "random_pairs" && (
+            <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+              Te apuntas solo. Al generar el cuadro se forman parejas al azar; si el
+              número es impar, uno se queda sin pareja.
+            </p>
+          )}
           <div className="mt-3 flex flex-wrap gap-2">
             <Badge variant="outline">{statusLabel(championship.status)}</Badge>
             <Badge className="bg-fiesta-yellow text-fiesta-ink">
-              {championship.entries.length} inscritos
+              {registrations.length} inscritos
             </Badge>
+            {dates && (
+              <Badge className="bg-fiesta-cyan text-fiesta-ink">{dates}</Badge>
+            )}
             {!championship.registrationOpen && (
               <Badge variant="secondary">Inscripciones cerradas</Badge>
             )}
@@ -62,7 +83,7 @@ export default async function ChampionshipPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="mt-10 grid gap-10 lg:grid-cols-2">
+      <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,340px)_1fr]">
         <section>
           {championship.registrationOpen ? (
             <EntryForm
@@ -76,11 +97,11 @@ export default async function ChampionshipPage({ params }: Props) {
           )}
 
           <h2 className="mt-8 font-display text-2xl tracking-wide">Inscritos</h2>
-          {championship.entries.length === 0 ? (
+          {registrations.length === 0 ? (
             <p className="mt-2 text-muted-foreground">Todavía no hay nadie apuntado.</p>
           ) : (
             <ol className="mt-3 flex flex-col gap-2">
-              {championship.entries.map((e, i) => (
+              {registrations.map((e, i) => (
                 <li
                   key={e.id}
                   className="flex gap-3 border-l-4 border-fiesta-cyan bg-white/80 px-3 py-2"
@@ -93,7 +114,7 @@ export default async function ChampionshipPage({ params }: Props) {
           )}
         </section>
 
-        <section>
+        <section className="min-w-0">
           <h2 className="font-display text-2xl tracking-wide">Cuadro</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Solo lectura. El organizador genera los emparejamientos y marca los ganadores.

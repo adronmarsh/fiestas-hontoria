@@ -36,13 +36,23 @@ export function ToggleRegistrationButton({
 export function GenerateBracketButton({
   championshipId,
   hasMatches,
+  pairingMode = "as_registered",
 }: {
   championshipId: string;
   hasMatches: boolean;
   hasResults?: boolean;
+  pairingMode?: "as_registered" | "random_pairs";
 }) {
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
+  const randomLabel =
+    pairingMode === "random_pairs"
+      ? "Generar parejas y cuadro"
+      : "Generar cuadro aleatorio";
+  const regenLabel =
+    pairingMode === "random_pairs"
+      ? "Regenerar parejas y cuadro"
+      : "Regenerar aleatorio";
 
   if (!hasMatches) {
     return (
@@ -57,7 +67,7 @@ export function GenerateBracketButton({
             })
           }
         >
-          {pending ? "Generando…" : "Generar cuadro aleatorio"}
+          {pending ? "Generando…" : randomLabel}
         </Button>
         {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
       </div>
@@ -76,7 +86,7 @@ export function GenerateBracketButton({
           })
         }
       >
-        {pending ? "Regenerando…" : "Regenerar aleatorio"}
+        {pending ? "Regenerando…" : regenLabel}
       </Button>
       {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
     </div>

@@ -14,7 +14,12 @@ export default async function AdminChampionshipsPage() {
   const championships = await prisma.championship.findMany({
     orderBy: { name: "asc" },
     include: {
-      _count: { select: { entries: true, matches: true } },
+      _count: {
+        select: {
+          entries: { where: { kind: "registration" } },
+          matches: true,
+        },
+      },
     },
   });
 
@@ -39,7 +44,9 @@ export default async function AdminChampionshipsPage() {
               <div>
                 <p className="font-display text-xl tracking-wide">{c.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {entryTypeLabel(c.entryType)}
+                  {c.pairingMode === "random_pairs"
+                    ? "Individual → parejas al azar"
+                    : entryTypeLabel(c.entryType)}
                   {c.organizer ? ` · Org: ${c.organizer}` : ""} ·{" "}
                   {c._count.entries} inscritos · {c._count.matches} partidos
                 </p>

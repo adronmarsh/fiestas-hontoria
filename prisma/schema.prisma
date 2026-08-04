@@ -13,6 +13,16 @@ enum EntryType {
   trio
 }
 
+enum PairingMode {
+  as_registered
+  random_pairs
+}
+
+enum EntryKind {
+  registration
+  team
+}
+
 enum ChampionshipStatus {
   open
   bracket
@@ -25,6 +35,11 @@ model Championship {
   slug             String             @unique
   organizer        String?
   entryType        EntryType
+  pairingMode      PairingMode        @default(as_registered)
+  /// Día de inicio en agosto (1–31), opcional
+  startDay         Int?
+  /// Día de fin en agosto (1–31), opcional
+  endDay           Int?
   registrationOpen Boolean            @default(true)
   status           ChampionshipStatus @default(open)
   createdAt        DateTime           @default(now())
@@ -37,6 +52,7 @@ model Entry {
   id             String       @id @default(cuid())
   championshipId String
   championship   Championship @relation(fields: [championshipId], references: [id], onDelete: Cascade)
+  kind           EntryKind    @default(registration)
   player1        String
   player2        String?
   player3        String?
@@ -46,6 +62,7 @@ model Entry {
   wins           Match[]      @relation("MatchWinner")
 
   @@index([championshipId])
+  @@index([championshipId, kind])
 }
 
 model Match {

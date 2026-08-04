@@ -28,6 +28,10 @@ const FIESTA_DAYS = [
   { date: "2026-08-07", weekday: "Vie", day: "7" },
   { date: "2026-08-08", weekday: "Sáb", day: "8" },
   { date: "2026-08-09", weekday: "Dom", day: "9" },
+  { date: "2026-08-10", weekday: "Lun", day: "10" },
+  { date: "2026-08-11", weekday: "Mar", day: "11" },
+  { date: "2026-08-12", weekday: "Mié", day: "12" },
+  { date: "2026-08-13", weekday: "Jue", day: "13" },
 ] as const;
 
 /** Horas típicas de fiestas (tarde/noche + madrugada). */

@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChampionshipsSchedule } from "@/components/championships-schedule";
 import { Badge } from "@/components/ui/badge";
-import { entryTypeLabel, statusLabel } from "@/lib/championships";
+import {
+  championshipDatesLabel,
+  entryTypeLabel,
+  statusLabel,
+} from "@/lib/championships";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
@@ -17,7 +21,11 @@ export default async function CampeonatosPage() {
   const [championships, matches] = await Promise.all([
     prisma.championship.findMany({
       orderBy: { name: "asc" },
-      include: { _count: { select: { entries: true } } },
+      include: {
+        _count: {
+          select: { entries: { where: { kind: "registration" } } },
+        },
+      },
     }),
     prisma.match.findMany({
       where: { scheduledAt: { not: null } },
@@ -50,7 +58,12 @@ export default async function CampeonatosPage() {
             >
               <h2 className="font-display text-2xl tracking-wide">{c.name}</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                {entryTypeLabel(c.entryType)}
+                {c.pairingMode === "random_pairs"
+                  ? "Individual → parejas al azar"
+                  : entryTypeLabel(c.entryType)}
+                {championshipDatesLabel(c.startDay, c.endDay)
+                  ? ` · ${championshipDatesLabel(c.startDay, c.endDay)}`
+                  : ""}
                 {c.organizer ? ` · Org: ${c.organizer}` : ""}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
