@@ -64,8 +64,7 @@ export default async function ChampionshipPage({ params }: Props) {
           )}
           {championship.pairingMode === "random_pairs" && (
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              Te apuntas solo. Al generar el cuadro se forman parejas al azar; si el
-              número es impar, uno se queda sin pareja.
+              Te apuntas solo. Al generar el cuadro se forman parejas al azar.
             </p>
           )}
           <div className="mt-3 flex flex-wrap gap-2">
