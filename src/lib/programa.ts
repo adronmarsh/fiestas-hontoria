@@ -119,3 +119,27 @@ export const NOTAS_INTERES = [
   "Entradas cena popular: comprar en el bar antes del 31 de julio; sin devoluciones ni venta posterior.",
   "Gracias por la colaboración y participación. ¡Feliz verano a todos!",
 ];
+
+/** Próximos días del programa a partir de hoy (Europe/Madrid). */
+export function highlightProgramaDays(
+  count = 3,
+  now: Date = new Date()
+): ProgramaDia[] {
+  const todayKey = now.toLocaleDateString("en-CA", { timeZone: "Europe/Madrid" });
+  const todayDay = Number(todayKey.slice(8, 10));
+  const month = Number(todayKey.slice(5, 7));
+  const year = Number(todayKey.slice(0, 4));
+
+  // Fuera de agosto 2026: muestra el inicio del programa
+  if (year < 2026 || (year === 2026 && month < 8)) {
+    return PROGRAMA.slice(0, count);
+  }
+  if (year > 2026 || (year === 2026 && month > 8)) {
+    return PROGRAMA.slice(-count);
+  }
+
+  const upcoming = PROGRAMA.filter((d) => Number(d.dayNumber) >= todayDay);
+  if (upcoming.length >= count) return upcoming.slice(0, count);
+  if (upcoming.length > 0) return upcoming;
+  return PROGRAMA.slice(-count);
+}
