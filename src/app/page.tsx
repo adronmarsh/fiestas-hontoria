@@ -2,11 +2,17 @@ import Link from "next/link";
 import { DayBanner } from "@/components/day-banner";
 import { Hero } from "@/components/hero";
 import { buttonVariants } from "@/components/ui/button";
-import { PROGRAMA, NOTAS_INTERES, PROGRAMA_PDF_HREF } from "@/lib/programa";
+import {
+  NOTAS_INTERES,
+  PROGRAMA_PDF_HREF,
+  highlightProgramaDays,
+} from "@/lib/programa";
 import { cn } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export default function HomePage() {
-  const highlightDays = PROGRAMA.slice(0, 3);
+  const highlightDays = highlightProgramaDays(3);
 
   return (
     <>
