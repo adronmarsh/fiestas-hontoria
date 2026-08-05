@@ -50,7 +50,7 @@ export default async function ChampionshipPage({ params }: Props) {
       : entryTypeLabel(championship.entryType);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12">
+    <div className="mx-auto max-w-[1400px] px-4 py-12">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-brush text-5xl text-fiesta-magenta sm:text-6xl">
@@ -86,7 +86,7 @@ export default async function ChampionshipPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,340px)_1fr]">
+      <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,300px)_1fr] lg:items-start">
         <section>
           {championship.registrationOpen ? (
             <EntryForm
@@ -103,7 +103,7 @@ export default async function ChampionshipPage({ params }: Props) {
           {registrations.length === 0 ? (
             <p className="mt-2 text-muted-foreground">Todavía no hay nadie apuntado.</p>
           ) : (
-            <ol className="mt-3 flex flex-col gap-2">
+            <ol className="mt-3 flex max-h-[28rem] flex-col gap-2 overflow-y-auto pr-1">
               {registrations.map((e, i) => (
                 <li
                   key={e.id}
@@ -122,7 +122,7 @@ export default async function ChampionshipPage({ params }: Props) {
           <p className="mt-1 text-sm text-muted-foreground">
             Solo lectura. El organizador genera los emparejamientos y marca los ganadores.
           </p>
-          <div className="mt-4">
+          <div className="mt-4 rounded-none border-2 border-fiesta-ink/15 bg-white/60 p-3 sm:p-4">
             <BracketView matches={championship.matches} />
           </div>
         </section>
