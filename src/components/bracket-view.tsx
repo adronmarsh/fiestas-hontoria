@@ -226,8 +226,8 @@ export function BracketView({
         })}
       </div>
       {matches.some(isResolvedBye) && (
-        <p className="mt-2 text-xs text-muted-foreground">
-          Se ocultan los pases automáticos (bye) para ver mejor el cuadro.
+        <p className="mt-2 max-w-[20rem] text-[11px] leading-snug text-muted-foreground sm:max-w-none sm:text-xs">
+          Byes automáticos ocultos
         </p>
       )}
     </div>
