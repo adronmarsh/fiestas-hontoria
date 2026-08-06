@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cartel · Fiestas Hontoria 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&family=Anton&family=Bangers&family=Barlow+Condensed:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --magenta: #e91e8c;
+        --yellow: #f5d000;
+        --cyan: #00b4c8;
+        --ink: #0a0a0a;
+        --paper: #faf7f2;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+
+      html,
+      body {
+        width: 210mm;
+        height: 297mm;
+        background: #111;
+      }
+
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .poster {
+        position: relative;
+        width: 210mm;
+        height: 297mm;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 18% 22%, #e91e8c55, transparent 42%),
+          radial-gradient(circle at 82% 18%, #00b4c855, transparent 38%),
+          radial-gradient(circle at 50% 88%, #f5d00044, transparent 46%),
+          linear-gradient(180deg, #1a1a2e 0%, #0a0a0a 48%, #2a0a20 100%);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 14mm 14mm 12mm;
+        text-align: center;
+      }
+
+      .poster::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+        opacity: 0.12;
+        pointer-events: none;
+        mix-blend-mode: overlay;
+      }
+
+      .frame {
+        position: absolute;
+        inset: 6mm;
+        border: 2.5px solid color-mix(in srgb, var(--yellow) 70%, white);
+        pointer-events: none;
+      }
+
+      .inner {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+      }
+
+      .escudo {
+        height: 28mm;
+        width: auto;
+        margin-top: 2mm;
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45));
+      }
+
+      .eyebrow {
+        margin-top: 5mm;
+        font-family: "Bangers", system-ui, sans-serif;
+        font-size: 7mm;
+        letter-spacing: 0.06em;
+        color: white;
+        text-transform: uppercase;
+      }
+
+      .brand {
+        margin-top: 2mm;
+        font-family: "Anton", Impact, sans-serif;
+        font-size: 15mm;
+        line-height: 0.95;
+        color: var(--yellow);
+        text-transform: uppercase;
+        letter-spacing: 0.01em;
+        max-width: 170mm;
+      }
+
+      .sub {
+        margin-top: 3mm;
+        font-family: "Amatic SC", cursive;
+        font-size: 11mm;
+        line-height: 1;
+        color: var(--magenta);
+      }
+
+      .headline {
+        margin-top: 8mm;
+        font-family: "Anton", Impact, sans-serif;
+        font-size: 12.5mm;
+        line-height: 1.05;
+        color: white;
+        text-transform: uppercase;
+        max-width: 168mm;
+      }
+
+      .headline em {
+        font-style: normal;
+        color: var(--cyan);
+      }
+
+      .support {
+        margin-top: 4mm;
+        font-family: "Barlow Condensed", sans-serif;
+        font-weight: 500;
+        font-size: 5.2mm;
+        line-height: 1.25;
+        color: rgba(255, 255, 255, 0.88);
+        max-width: 155mm;
+      }
+
+      .qr-block {
+        margin-top: auto;
+        margin-bottom: 2mm;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3.5mm;
+      }
+
+      .qr-wrap {
+        background: white;
+        padding: 4.5mm;
+        border: 3px solid var(--ink);
+        box-shadow: 4px 4px 0 color-mix(in srgb, var(--magenta) 80%, black);
+      }
+
+      .qr-wrap img {
+        display: block;
+        width: 58mm;
+        height: 58mm;
+      }
+
+      .cta {
+        font-family: "Bangers", system-ui, sans-serif;
+        font-size: 8mm;
+        letter-spacing: 0.04em;
+        color: var(--yellow);
+        text-transform: uppercase;
+      }
+
+      .url {
+        font-family: "Barlow Condensed", sans-serif;
+        font-weight: 700;
+        font-size: 4.4mm;
+        color: rgba(255, 255, 255, 0.92);
+        letter-spacing: 0.02em;
+        word-break: break-all;
+      }
+
+      .footer {
+        margin-top: 4mm;
+        font-family: "Barlow Condensed", sans-serif;
+        font-size: 3.6mm;
+        color: rgba(255, 255, 255, 0.55);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      @media screen {
+        body {
+          display: flex;
+          justify-content: center;
+          align-items: flex-start;
+          min-height: 100vh;
+          padding: 24px;
+          background: #333;
+        }
+        .poster {
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <article class="poster" aria-label="Cartel Fiestas Hontoria 2026">
+      <div class="frame" aria-hidden="true"></div>
+      <div class="inner">
+        <img class="escudo" src="../escudo.svg" alt="" />
+        <p class="eyebrow">Fiestas de verano · Agosto 2026</p>
+        <h1 class="brand">Hontoria de la Cantera</h1>
+        <p class="sub">Semana Cultural 2026</p>
+
+        <h2 class="headline">
+          Apúntate a los<br /><em>campeonatos</em><br />desde el móvil
+        </h2>
+        <p class="support">
+          Inscripciones, cuadros y horarios en la web del pueblo. Escanea el código y
+          regístrate en un minuto.
+        </p>
+
+        <div class="qr-block">
+          <div class="qr-wrap">
+            <img src="./qr-web.png" alt="Código QR a la web de Fiestas Hontoria" />
+          </div>
+          <p class="cta">Escanea e inscríbete</p>
+          <p class="url">fiestas-hontoria.vercel.app</p>
+        </div>
+
+        <p class="footer">Asociación Cultural · Hontoria de la Cantera</p>
+      </div>
+    </article>
+  </body>
+</html>

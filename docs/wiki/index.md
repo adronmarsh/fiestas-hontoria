@@ -21,3 +21,9 @@
 - Producción: https://fiestas-hontoria.vercel.app
 - Base de datos: Neon (`fiestas-hontoria`)
 - Admin: `/admin` con `ADMIN_PASSWORD` en variables de entorno
+
+## Cartel
+
+- Vista previa: `/cartel/` (HTML A4)
+- PDF imprimible: `/cartel/cartel-fiestas-hontoria-2026.pdf`
+- Regenerar: `npm run cartel:qr` y `npm run cartel:pdf`

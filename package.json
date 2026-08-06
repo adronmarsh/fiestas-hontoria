@@ -9,7 +9,9 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "cartel:qr": "tsx scripts/generate-cartel-qr.ts",
+    "cartel:pdf": "tsx scripts/export-cartel-pdf.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -21,6 +23,7 @@
     "lucide-react": "^1.28.0",
     "next": "16.2.12",
     "prisma": "^6.19.3",
+    "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "shadcn": "^4.16.1",
@@ -31,10 +34,12 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
+    "playwright": "^1.62.1",
     "tailwindcss": "^4",
     "tsx": "^4.23.4",
     "typescript": "^5"
